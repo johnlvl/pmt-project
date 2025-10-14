@@ -13,4 +13,6 @@ public interface TaskAssignmentRepository extends JpaRepository<TaskAssignment, 
     @Query("select ta.task.id from TaskAssignment ta where ta.task.project.id = :projectId and ta.user.email = :email")
     List<Integer> findTaskIdsByProjectIdAndAssigneeEmail(@Param("projectId") Integer projectId,
                                                          @Param("email") String email);
+
+    List<TaskAssignment> findByTask_Id(Integer taskId);
 }
