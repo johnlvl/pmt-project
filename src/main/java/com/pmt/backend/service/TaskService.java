@@ -2,13 +2,16 @@ package com.pmt.backend.service;
 
 import com.pmt.backend.dto.TaskCreateRequest;
 import com.pmt.backend.dto.TaskResponse;
+import com.pmt.backend.dto.TaskUpdateRequest;
 import com.pmt.backend.entity.Project;
 import com.pmt.backend.entity.Task;
+import com.pmt.backend.entity.TaskHistory;
 import com.pmt.backend.exception.NotProjectMemberException;
 import com.pmt.backend.exception.UserNotFoundException;
 import com.pmt.backend.repository.ProjectMemberRepository;
 import com.pmt.backend.repository.ProjectRepository;
 import com.pmt.backend.repository.TaskRepository;
+import com.pmt.backend.repository.TaskHistoryRepository;
 import com.pmt.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,15 +26,18 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final TaskHistoryRepository taskHistoryRepository;
 
     public TaskService(TaskRepository taskRepository,
                        ProjectRepository projectRepository,
                        UserRepository userRepository,
-                       ProjectMemberRepository projectMemberRepository) {
+                       ProjectMemberRepository projectMemberRepository,
+                       TaskHistoryRepository taskHistoryRepository) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.taskHistoryRepository = taskHistoryRepository;
     }
 
     @Transactional
@@ -84,5 +90,72 @@ public class TaskService {
                 t.getPriority(),
                 t.getStatus()
         );
+    }
+
+    @Transactional
+    public TaskResponse update(TaskUpdateRequest req) {
+        var requester = userRepository.findByEmail(req.getRequesterEmail())
+                .orElseThrow(() -> new UserNotFoundException(req.getRequesterEmail()));
+
+        boolean isMember = projectMemberRepository
+                .findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail())
+                .isPresent();
+        if (!isMember) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+
+        Task task = taskRepository.findById(req.getTaskId())
+                .orElseThrow(() -> new RuntimeException("Task not found: " + req.getTaskId()));
+        if (task.getProject() == null || task.getProject().getId() == null ||
+                !task.getProject().getId().equals(req.getProjectId())) {
+            throw new IllegalArgumentException("Task does not belong to project " + req.getProjectId());
+        }
+
+        StringBuilder changes = new StringBuilder();
+        if (req.getName() != null && !req.getName().equals(task.getName())) {
+            changes.append("name: '" + task.getName() + "' -> '" + req.getName() + "'\n");
+            task.setName(req.getName());
+        }
+        if (req.getDescription() != null && !req.getDescription().equals(task.getDescription())) {
+            changes.append("description changed\n");
+            task.setDescription(req.getDescription());
+        }
+        if (req.getPriority() != null && !req.getPriority().equals(task.getPriority())) {
+            changes.append("priority: '" + task.getPriority() + "' -> '" + req.getPriority() + "'\n");
+            task.setPriority(req.getPriority());
+        }
+        if (req.getStatus() != null && !req.getStatus().equals(task.getStatus())) {
+            changes.append("status: '" + task.getStatus() + "' -> '" + req.getStatus() + "'\n");
+            task.setStatus(req.getStatus());
+        }
+        if (req.getDueDate() != null) {
+            var newDate = req.getDueDate().isBlank() ? null : parseDate(req.getDueDate());
+            var oldStr = task.getDueDate() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(task.getDueDate()) : null;
+            var newStr = newDate != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(newDate) : null;
+            if (!java.util.Objects.equals(oldStr, newStr)) {
+                changes.append("dueDate: '" + oldStr + "' -> '" + newStr + "'\n");
+                task.setDueDate(newDate);
+            }
+        }
+        if (req.getEndDate() != null) {
+            var newDate = req.getEndDate().isBlank() ? null : parseDate(req.getEndDate());
+            var oldStr = task.getEndDate() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(task.getEndDate()) : null;
+            var newStr = newDate != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(newDate) : null;
+            if (!java.util.Objects.equals(oldStr, newStr)) {
+                changes.append("endDate: '" + oldStr + "' -> '" + newStr + "'\n");
+                task.setEndDate(newDate);
+            }
+        }
+
+        Task saved = taskRepository.save(task);
+
+        if (changes.length() > 0) {
+            TaskHistory h = new TaskHistory();
+            h.setTask(saved);
+            h.setChangedBy(requester);
+            h.setChangeDate(new java.util.Date());
+            h.setChangeDescription(changes.toString());
+            taskHistoryRepository.save(h);
+        }
+
+        return toResponse(saved);
     }
 }

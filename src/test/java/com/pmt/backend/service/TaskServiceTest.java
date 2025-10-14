@@ -1,6 +1,7 @@
 package com.pmt.backend.service;
 
 import com.pmt.backend.dto.TaskCreateRequest;
+import com.pmt.backend.dto.TaskUpdateRequest;
 import com.pmt.backend.entity.Project;
 import com.pmt.backend.entity.ProjectMember;
 import com.pmt.backend.entity.Task;
@@ -9,6 +10,7 @@ import com.pmt.backend.exception.NotProjectMemberException;
 import com.pmt.backend.repository.ProjectMemberRepository;
 import com.pmt.backend.repository.ProjectRepository;
 import com.pmt.backend.repository.TaskRepository;
+import com.pmt.backend.repository.TaskHistoryRepository;
 import com.pmt.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,14 +26,16 @@ class TaskServiceTest {
     UserRepository userRepository;
     ProjectMemberRepository projectMemberRepository;
     TaskService taskService;
+    TaskHistoryRepository taskHistoryRepository;
 
     @BeforeEach
     void setUp() {
-        taskRepository = Mockito.mock(TaskRepository.class);
+    taskRepository = Mockito.mock(TaskRepository.class);
         projectRepository = Mockito.mock(ProjectRepository.class);
         userRepository = Mockito.mock(UserRepository.class);
         projectMemberRepository = Mockito.mock(ProjectMemberRepository.class);
-        taskService = new TaskService(taskRepository, projectRepository, userRepository, projectMemberRepository);
+    taskHistoryRepository = Mockito.mock(TaskHistoryRepository.class);
+    taskService = new TaskService(taskRepository, projectRepository, userRepository, projectMemberRepository, taskHistoryRepository);
     }
 
     @Test
@@ -56,6 +60,27 @@ class TaskServiceTest {
         var resp = taskService.create(req);
         assertEquals(10, resp.getId());
         assertEquals("TODO", resp.getStatus());
+    }
+
+    @Test
+    void update_ok() {
+        TaskUpdateRequest req = new TaskUpdateRequest();
+        req.setTaskId(10);
+        req.setProjectId(1);
+        req.setRequesterEmail("alice@example.com");
+        req.setStatus("IN_PROGRESS");
+
+        User u = new User(); u.setId(1); u.setEmail("alice@example.com");
+        Project p = new Project(); p.setId(1);
+        Task t = new Task(); t.setId(10); t.setProject(p); t.setStatus("TODO");
+
+        Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(u));
+        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(new ProjectMember()));
+        Mockito.when(taskRepository.findById(10)).thenReturn(Optional.of(t));
+        Mockito.when(taskRepository.save(Mockito.any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var resp = taskService.update(req);
+        assertEquals("IN_PROGRESS", resp.getStatus());
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.pmt.backend.controller;
 
 import com.pmt.backend.dto.TaskCreateRequest;
 import com.pmt.backend.dto.TaskResponse;
+import com.pmt.backend.dto.TaskUpdateRequest;
 import com.pmt.backend.exception.NotProjectMemberException;
 import com.pmt.backend.exception.UserNotFoundException;
 import com.pmt.backend.service.TaskService;
@@ -23,6 +24,12 @@ public class TaskController {
     public ResponseEntity<TaskResponse> create(@Valid @RequestBody TaskCreateRequest req) {
         TaskResponse resp = taskService.create(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
+    }
+
+    @PatchMapping("/update")
+    public ResponseEntity<TaskResponse> update(@Valid @RequestBody TaskUpdateRequest req) {
+        TaskResponse resp = taskService.update(req);
+        return ResponseEntity.ok(resp);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

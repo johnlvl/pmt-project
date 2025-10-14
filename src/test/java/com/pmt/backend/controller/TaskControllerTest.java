@@ -3,6 +3,7 @@ package com.pmt.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pmt.backend.dto.TaskCreateRequest;
 import com.pmt.backend.dto.TaskResponse;
+import com.pmt.backend.dto.TaskUpdateRequest;
 import com.pmt.backend.exception.NotProjectMemberException;
 import com.pmt.backend.exception.UserNotFoundException;
 import com.pmt.backend.service.TaskService;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TaskController.class)
@@ -54,6 +56,24 @@ class TaskControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.status").value("TODO"));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/tasks/update -> 200 ok")
+    void update_shouldReturnOk() throws Exception {
+        TaskUpdateRequest req = new TaskUpdateRequest();
+        req.setTaskId(10);
+        req.setProjectId(1);
+        req.setRequesterEmail("alice@example.com");
+        req.setStatus("IN_PROGRESS");
+
+        Mockito.when(taskService.update(any(TaskUpdateRequest.class)))
+                .thenReturn(new TaskResponse(10, 1, "Task A", "desc", "2025-10-31", null, "HIGH", "IN_PROGRESS"));
+
+        mockMvc.perform(patch("/api/tasks/update").contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("IN_PROGRESS"));
     }
 
     @Test
