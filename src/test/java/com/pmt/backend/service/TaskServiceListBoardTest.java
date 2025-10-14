@@ -23,6 +23,7 @@ class TaskServiceListBoardTest {
     TaskHistoryRepository taskHistoryRepository;
     TaskAssignmentRepository taskAssignmentRepository;
     TaskService taskService;
+    NotificationService notificationService;
 
     @BeforeEach
     void setup() {
@@ -30,10 +31,11 @@ class TaskServiceListBoardTest {
         projectRepository = Mockito.mock(ProjectRepository.class);
         userRepository = Mockito.mock(UserRepository.class);
         projectMemberRepository = Mockito.mock(ProjectMemberRepository.class);
-        taskHistoryRepository = Mockito.mock(TaskHistoryRepository.class);
-        taskAssignmentRepository = Mockito.mock(TaskAssignmentRepository.class);
-        taskService = new TaskService(taskRepository, projectRepository, userRepository,
-                projectMemberRepository, taskHistoryRepository, taskAssignmentRepository);
+    taskHistoryRepository = Mockito.mock(TaskHistoryRepository.class);
+    taskAssignmentRepository = Mockito.mock(TaskAssignmentRepository.class);
+    notificationService = Mockito.mock(NotificationService.class);
+    taskService = new TaskService(taskRepository, projectRepository, userRepository,
+        projectMemberRepository, taskHistoryRepository, taskAssignmentRepository, notificationService);
     }
 
     @Test

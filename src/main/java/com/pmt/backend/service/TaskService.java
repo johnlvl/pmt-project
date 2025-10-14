@@ -16,6 +16,7 @@ import com.pmt.backend.repository.TaskRepository;
 import com.pmt.backend.repository.TaskHistoryRepository;
 import com.pmt.backend.repository.TaskAssignmentRepository;
 import com.pmt.backend.repository.UserRepository;
+import com.pmt.backend.service.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,19 +32,22 @@ public class TaskService {
     private final ProjectMemberRepository projectMemberRepository;
     private final TaskHistoryRepository taskHistoryRepository;
     private final TaskAssignmentRepository taskAssignmentRepository;
+    private final NotificationService notificationService;
 
     public TaskService(TaskRepository taskRepository,
                        ProjectRepository projectRepository,
                        UserRepository userRepository,
                        ProjectMemberRepository projectMemberRepository,
                        TaskHistoryRepository taskHistoryRepository,
-                       TaskAssignmentRepository taskAssignmentRepository) {
+                       TaskAssignmentRepository taskAssignmentRepository,
+                       NotificationService notificationService) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.taskHistoryRepository = taskHistoryRepository;
         this.taskAssignmentRepository = taskAssignmentRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -131,6 +135,14 @@ public class TaskService {
         if (req.getStatus() != null && !req.getStatus().equals(task.getStatus())) {
             changes.append("status: '" + task.getStatus() + "' -> '" + req.getStatus() + "'\n");
             task.setStatus(req.getStatus());
+            // Notify current assignee(s) about status change
+            var assignments = taskAssignmentRepository.findByTask_Id(task.getId());
+            for (var a : assignments) {
+                if (a.getUser() != null && a.getUser().getEmail() != null) {
+                    notificationService.notifyUserForTask(a.getUser().getEmail(), task.getId(),
+                            "Le statut de la tâche '" + task.getName() + "' est passé à '" + req.getStatus() + "'.");
+                }
+            }
         }
         if (req.getDueDate() != null) {
             var newDate = req.getDueDate().isBlank() ? null : parseDate(req.getDueDate());

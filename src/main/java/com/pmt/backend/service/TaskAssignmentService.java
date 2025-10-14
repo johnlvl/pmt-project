@@ -15,15 +15,18 @@ public class TaskAssignmentService {
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final NotificationService notificationService;
 
     public TaskAssignmentService(TaskAssignmentRepository taskAssignmentRepository,
                                  TaskRepository taskRepository,
                                  UserRepository userRepository,
-                                 ProjectMemberRepository projectMemberRepository) {
+                                 ProjectMemberRepository projectMemberRepository,
+                                 NotificationService notificationService) {
         this.taskAssignmentRepository = taskAssignmentRepository;
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -55,5 +58,9 @@ public class TaskAssignmentService {
         ta.setTask(task);
         ta.setUser(assignee);
         taskAssignmentRepository.save(ta);
+
+    // Notify assignee
+    notificationService.notifyUserForTask(assignee.getEmail(), task.getId(),
+        "Vous avez été assigné à la tâche '" + task.getName() + "'.");
     }
 }
