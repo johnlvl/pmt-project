@@ -11,6 +11,7 @@ import com.pmt.backend.repository.ProjectMemberRepository;
 import com.pmt.backend.repository.ProjectRepository;
 import com.pmt.backend.repository.TaskRepository;
 import com.pmt.backend.repository.TaskHistoryRepository;
+import com.pmt.backend.repository.TaskAssignmentRepository;
 import com.pmt.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class TaskServiceTest {
     ProjectMemberRepository projectMemberRepository;
     TaskService taskService;
     TaskHistoryRepository taskHistoryRepository;
+    TaskAssignmentRepository taskAssignmentRepository;
 
     @BeforeEach
     void setUp() {
@@ -35,7 +37,8 @@ class TaskServiceTest {
         userRepository = Mockito.mock(UserRepository.class);
         projectMemberRepository = Mockito.mock(ProjectMemberRepository.class);
     taskHistoryRepository = Mockito.mock(TaskHistoryRepository.class);
-    taskService = new TaskService(taskRepository, projectRepository, userRepository, projectMemberRepository, taskHistoryRepository);
+    taskAssignmentRepository = Mockito.mock(TaskAssignmentRepository.class);
+    taskService = new TaskService(taskRepository, projectRepository, userRepository, projectMemberRepository, taskHistoryRepository, taskAssignmentRepository);
     }
 
     @Test

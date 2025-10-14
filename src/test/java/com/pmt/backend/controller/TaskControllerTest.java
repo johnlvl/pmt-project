@@ -77,6 +77,36 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/tasks -> 200 ok list")
+    void list_shouldReturnOk() throws Exception {
+        Mockito.when(taskService.list(Mockito.eq(1), Mockito.eq("alice@example.com"), Mockito.isNull()))
+                .thenReturn(java.util.List.of(
+                        new com.pmt.backend.dto.TaskListItem(10, "Task A", "TODO", "HIGH", "2025-10-31")
+                ));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/tasks")
+                        .param("projectId", "1")
+                        .param("requesterEmail", "alice@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(10));
+    }
+
+    @Test
+    @DisplayName("GET /api/tasks/board -> 200 ok board")
+    void board_shouldReturnOk() throws Exception {
+        var lanes = new java.util.HashMap<String, java.util.List<com.pmt.backend.dto.TaskListItem>>();
+        lanes.put("TODO", java.util.List.of(new com.pmt.backend.dto.TaskListItem(10, "Task A", "TODO", "HIGH", "2025-10-31")));
+        Mockito.when(taskService.board(1, "alice@example.com"))
+                .thenReturn(new com.pmt.backend.dto.TaskBoardResponse(lanes));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/tasks/board")
+                        .param("projectId", "1")
+                        .param("requesterEmail", "alice@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.lanes.TODO[0].id").value(10));
+    }
+
+    @Test
     @DisplayName("POST /api/tasks -> 400 when invalid payload")
     void create_shouldReturnBadRequest_whenInvalid() throws Exception {
         TaskCreateRequest req = new TaskCreateRequest();

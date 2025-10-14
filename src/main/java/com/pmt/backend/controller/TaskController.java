@@ -3,6 +3,8 @@ package com.pmt.backend.controller;
 import com.pmt.backend.dto.TaskCreateRequest;
 import com.pmt.backend.dto.TaskResponse;
 import com.pmt.backend.dto.TaskUpdateRequest;
+import com.pmt.backend.dto.TaskListItem;
+import com.pmt.backend.dto.TaskBoardResponse;
 import com.pmt.backend.exception.NotProjectMemberException;
 import com.pmt.backend.exception.UserNotFoundException;
 import com.pmt.backend.service.TaskService;
@@ -30,6 +32,21 @@ public class TaskController {
     public ResponseEntity<TaskResponse> update(@Valid @RequestBody TaskUpdateRequest req) {
         TaskResponse resp = taskService.update(req);
         return ResponseEntity.ok(resp);
+    }
+
+    @GetMapping
+    public ResponseEntity<java.util.List<TaskListItem>> list(
+            @RequestParam Integer projectId,
+            @RequestParam String requesterEmail,
+            @RequestParam(required = false) String assigneeEmail) {
+        return ResponseEntity.ok(taskService.list(projectId, requesterEmail, assigneeEmail));
+    }
+
+    @GetMapping("/board")
+    public ResponseEntity<TaskBoardResponse> board(
+            @RequestParam Integer projectId,
+            @RequestParam String requesterEmail) {
+        return ResponseEntity.ok(taskService.board(projectId, requesterEmail));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
