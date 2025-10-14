@@ -24,6 +24,7 @@ class TaskAssignmentServiceTest {
     UserRepository userRepository;
     ProjectMemberRepository projectMemberRepository;
     NotificationService notificationService;
+    EmailService emailService;
     TaskAssignmentService service;
 
     @BeforeEach
@@ -32,8 +33,9 @@ class TaskAssignmentServiceTest {
         taskRepository = Mockito.mock(TaskRepository.class);
         userRepository = Mockito.mock(UserRepository.class);
         projectMemberRepository = Mockito.mock(ProjectMemberRepository.class);
-        notificationService = Mockito.mock(NotificationService.class);
-        service = new TaskAssignmentService(taskAssignmentRepository, taskRepository, userRepository, projectMemberRepository, notificationService);
+    notificationService = Mockito.mock(NotificationService.class);
+    emailService = Mockito.mock(EmailService.class);
+    service = new TaskAssignmentService(taskAssignmentRepository, taskRepository, userRepository, projectMemberRepository, notificationService, emailService);
     }
 
     @Test
@@ -58,5 +60,6 @@ class TaskAssignmentServiceTest {
         service.assign(req);
 
     verify(notificationService).notifyUserForTask(ArgumentMatchers.eq("bob@example.com"), ArgumentMatchers.eq(10), ArgumentMatchers.contains("Task A"));
+    verify(emailService).send(ArgumentMatchers.eq("bob@example.com"), ArgumentMatchers.contains("assignation"), ArgumentMatchers.contains("Task A"));
     }
 }
