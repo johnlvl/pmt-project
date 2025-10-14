@@ -3,6 +3,8 @@ package com.pmt.backend.service;
 import com.pmt.backend.dto.TaskCreateRequest;
 import com.pmt.backend.dto.TaskResponse;
 import com.pmt.backend.dto.TaskUpdateRequest;
+import com.pmt.backend.dto.TaskListItem;
+import com.pmt.backend.dto.TaskBoardResponse;
 import com.pmt.backend.entity.Project;
 import com.pmt.backend.entity.Task;
 import com.pmt.backend.entity.TaskHistory;
@@ -12,6 +14,7 @@ import com.pmt.backend.repository.ProjectMemberRepository;
 import com.pmt.backend.repository.ProjectRepository;
 import com.pmt.backend.repository.TaskRepository;
 import com.pmt.backend.repository.TaskHistoryRepository;
+import com.pmt.backend.repository.TaskAssignmentRepository;
 import com.pmt.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,17 +30,20 @@ public class TaskService {
     private final UserRepository userRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final TaskHistoryRepository taskHistoryRepository;
+    private final TaskAssignmentRepository taskAssignmentRepository;
 
     public TaskService(TaskRepository taskRepository,
                        ProjectRepository projectRepository,
                        UserRepository userRepository,
                        ProjectMemberRepository projectMemberRepository,
-                       TaskHistoryRepository taskHistoryRepository) {
+                       TaskHistoryRepository taskHistoryRepository,
+                       TaskAssignmentRepository taskAssignmentRepository) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.taskHistoryRepository = taskHistoryRepository;
+        this.taskAssignmentRepository = taskAssignmentRepository;
     }
 
     @Transactional
@@ -157,5 +163,37 @@ public class TaskService {
         }
 
         return toResponse(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.List<TaskListItem> list(Integer projectId, String requesterEmail, String assigneeEmail) {
+        var requester = userRepository.findByEmail(requesterEmail)
+                .orElseThrow(() -> new UserNotFoundException(requesterEmail));
+        boolean isMember = projectMemberRepository.findByProject_IdAndUser_Email(projectId, requester.getEmail()).isPresent();
+        if (!isMember) throw new NotProjectMemberException(projectId, requester.getEmail());
+
+        java.util.List<Task> tasks;
+        if (assigneeEmail != null && !assigneeEmail.isBlank()) {
+            var ids = taskAssignmentRepository.findTaskIdsByProjectIdAndAssigneeEmail(projectId, assigneeEmail);
+            tasks = ids.isEmpty() ? java.util.List.of() : taskRepository.findByProject_IdAndIdIn(projectId, ids);
+        } else {
+            tasks = taskRepository.findByProject_Id(projectId);
+        }
+        var fmt = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        return tasks.stream()
+                .map(t -> new TaskListItem(
+                        t.getId(), t.getName(), t.getStatus(), t.getPriority(),
+                        t.getDueDate() != null ? fmt.format(t.getDueDate()) : null))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TaskBoardResponse board(Integer projectId, String requesterEmail) {
+        var items = list(projectId, requesterEmail, null);
+        java.util.Map<String, java.util.List<TaskListItem>> lanes = new java.util.HashMap<>();
+        for (var it : items) {
+            lanes.computeIfAbsent(it.status != null ? it.status : "UNKNOWN", k -> new java.util.ArrayList<>()).add(it);
+        }
+        return new TaskBoardResponse(lanes);
     }
 }
