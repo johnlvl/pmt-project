@@ -196,4 +196,19 @@ public class TaskService {
         }
         return new TaskBoardResponse(lanes);
     }
+
+    @Transactional(readOnly = true)
+    public java.util.List<TaskHistory> history(Integer taskId, Integer projectId, String requesterEmail) {
+        var requester = userRepository.findByEmail(requesterEmail)
+                .orElseThrow(() -> new UserNotFoundException(requesterEmail));
+        boolean isMember = projectMemberRepository.findByProject_IdAndUser_Email(projectId, requester.getEmail()).isPresent();
+        if (!isMember) throw new NotProjectMemberException(projectId, requester.getEmail());
+
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found: " + taskId));
+        if (task.getProject() == null || task.getProject().getId() == null || !task.getProject().getId().equals(projectId)) {
+            throw new IllegalArgumentException("Task does not belong to project " + projectId);
+        }
+        return taskHistoryRepository.findByTask_IdOrderByChangeDateDesc(taskId);
+    }
 }

@@ -59,6 +59,18 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/tasks/{taskId}/history -> 200 ok")
+    void history_shouldReturnOk() throws Exception {
+        Mockito.when(taskService.history(10, 1, "alice@example.com"))
+                .thenReturn(java.util.List.of());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/tasks/10/history")
+                        .param("projectId", "1")
+                        .param("requesterEmail", "alice@example.com"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     @DisplayName("PATCH /api/tasks/update -> 200 ok")
     void update_shouldReturnOk() throws Exception {
         TaskUpdateRequest req = new TaskUpdateRequest();
