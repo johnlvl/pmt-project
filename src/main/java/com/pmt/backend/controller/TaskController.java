@@ -50,6 +50,14 @@ public class TaskController {
         return ResponseEntity.ok(taskService.board(projectId, requesterEmail));
     }
 
+    @GetMapping("/{taskId}")
+    public ResponseEntity<TaskResponse> get(
+            @PathVariable Integer taskId,
+            @RequestParam Integer projectId,
+            @RequestParam String requesterEmail) {
+        return ResponseEntity.ok(taskService.get(taskId, projectId, requesterEmail));
+    }
+
     @GetMapping("/{taskId}/history")
     public ResponseEntity<java.util.List<TaskHistory>> history(
             @PathVariable Integer taskId,
