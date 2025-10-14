@@ -119,6 +119,20 @@ class TaskControllerTest {
     }
 
     @Test
+    @DisplayName("GET /api/tasks/{taskId} -> 200 ok single task")
+    void get_shouldReturnOk() throws Exception {
+        Mockito.when(taskService.get(10, 1, "alice@example.com"))
+                .thenReturn(new TaskResponse(10, 1, "Task A", "desc", "2025-10-31", null, "HIGH", "TODO"));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/tasks/10")
+                        .param("projectId", "1")
+                        .param("requesterEmail", "alice@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.name").value("Task A"));
+    }
+
+    @Test
     @DisplayName("POST /api/tasks -> 400 when invalid payload")
     void create_shouldReturnBadRequest_whenInvalid() throws Exception {
         TaskCreateRequest req = new TaskCreateRequest();
