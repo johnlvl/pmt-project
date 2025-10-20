@@ -52,8 +52,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     env:
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      DOCKERHUB_LOGIN_USERNAME: ${{ secrets.DOCKERHUB_LOGIN_USERNAME }}
+      DOCKERHUB_LOGIN_TOKEN: ${{ secrets.DOCKERHUB_LOGIN_TOKEN }}
+      DOCKERHUB_IMAGE_NAMESPACE: ${{ secrets.DOCKERHUB_IMAGE_NAMESPACE }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,11 +72,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
-        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        if: ${{ env.DOCKERHUB_LOGIN_USERNAME != '' && env.DOCKERHUB_LOGIN_TOKEN != '' }}
         uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKERHUB_USERNAME }}
-          password: ${{ env.DOCKERHUB_TOKEN }}
+          username: ${{ env.DOCKERHUB_LOGIN_USERNAME }}
+          password: ${{ env.DOCKERHUB_LOGIN_TOKEN }}
 
       - name: Extract project version (with fallback)
         id: mvn
@@ -89,13 +90,23 @@ jobs:
           fi
           echo "version=$VERSION_TRIMMED" >> $GITHUB_OUTPUT
 
+      - name: Resolve image namespace
+        id: ns
+        shell: bash
+        run: |
+          NS="$DOCKERHUB_IMAGE_NAMESPACE"
+          if [ -z "$NS" ]; then
+            NS="$DOCKERHUB_LOGIN_USERNAME"
+          fi
+          echo "namespace=$NS" >> $GITHUB_OUTPUT
+
       - name: Build and push image
-        if: ${{ env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
+        if: ${{ env.DOCKERHUB_LOGIN_USERNAME != '' && env.DOCKERHUB_LOGIN_TOKEN != '' }}
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKERHUB_USERNAME }}/pmt-backend:latest
-            ${{ env.DOCKERHUB_USERNAME }}/pmt-backend:${{ steps.mvn.outputs.version }}
+            ${{ steps.ns.outputs.namespace }}/pmt-backend:latest
+            ${{ steps.ns.outputs.namespace }}/pmt-backend:${{ steps.mvn.outputs.version }}
