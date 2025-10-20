@@ -54,3 +54,7 @@ build/
 
 ### Application properties with sensitive data ###
 application-local.properties
+
+# Project docs (ignore generated/copilot helper files)
+/.github/copilot-instructions.md
+/.github/prompts/prompt.md
