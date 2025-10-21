@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +16,5 @@ import { HttpClient } from '@angular/common/http';
   `
 })
 export class AppComponent {
-  http = inject(HttpClient);
   config = window.RUNTIME_CONFIG || { API_BASE_URL: '/api' };
 }
