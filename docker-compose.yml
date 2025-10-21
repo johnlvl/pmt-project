@@ -8,8 +8,6 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-pmt_db}
       MYSQL_USER: ${MYSQL_USER:-pmt}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-pmt}
-    ports:
-      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
 

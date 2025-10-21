@@ -2,10 +2,6 @@ import { Component, inject } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-declare global {
-  interface Window { RUNTIME_CONFIG: { API_BASE_URL: string }; }
-}
-
 @Component({
   selector: 'app-root',
   standalone: true,
