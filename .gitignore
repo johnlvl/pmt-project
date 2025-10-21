@@ -58,3 +58,9 @@ application-local.properties
 # Project docs (ignore generated/copilot helper files)
 /.github/copilot-instructions.md
 /.github/prompts/prompt.md
+
+# Frontend
+/frontend/node_modules/
+/frontend/dist/
+/frontend/coverage/
+/frontend/.angular/

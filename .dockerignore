@@ -28,6 +28,3 @@ Thumbs.db
 
 # Local properties
 application-local.properties
-
-# GitHub meta and CI cache
-.github/java-upgrade/
