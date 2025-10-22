@@ -8,6 +8,7 @@ import { ProjectMembersPageComponent } from './project-members.page';
 import { TasksPageComponent } from './tasks.page';
 import { ProjectTasksPageComponent } from './project-tasks.page';
 import { BoardPageComponent } from './board.page';
+import { ProjectBoardPageComponent } from './project-board.page';
 import { NotificationsPageComponent } from './notifications.page';
 
 export const routes: Routes = [
@@ -18,6 +19,7 @@ export const routes: Routes = [
   { path: 'projects/:projectId', component: ProjectDetailPageComponent },
   { path: 'projects/:projectId/members', component: ProjectMembersPageComponent },
   { path: 'projects/:projectId/tasks', component: ProjectTasksPageComponent },
+  { path: 'projects/:projectId/board', component: ProjectBoardPageComponent },
   { path: 'tasks', component: TasksPageComponent },
   { path: 'board', component: BoardPageComponent },
   { path: 'notifications', component: NotificationsPageComponent },

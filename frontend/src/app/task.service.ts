@@ -29,4 +29,16 @@ export class TaskService {
   remove(taskId: number): Observable<void> {
     return this.http.delete<void>(`/api/tasks/${taskId}`);
   }
+
+  // Board (Kanban)
+  board(projectId: number): Observable<{ lanes: Record<string, TaskItem[]> } | any> {
+    const params = new HttpParams().set('projectId', projectId);
+    return this.http.get<{ lanes: Record<string, TaskItem[]> }>(`/api/tasks/board`, { params });
+  }
+
+  updateStatus(projectId: number, taskId: number, status: TaskStatus, requesterEmail?: string): Observable<TaskItem> {
+    const body: any = { taskId, projectId, status };
+    if (requesterEmail) body.requesterEmail = requesterEmail;
+    return this.http.patch<TaskItem>(`/api/tasks/update`, body);
+  }
 }

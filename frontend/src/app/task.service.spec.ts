@@ -37,4 +37,17 @@ describe('TaskService', () => {
     const req = http.expectOne(r => r.method==='DELETE' && r.url.endsWith('/api/tasks/5'));
     req.flush({});
   });
+
+  it('loads board lanes', () => {
+    svc.board(1).subscribe(res => expect((res as any).lanes).toBeDefined());
+    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks/board') && r.params.get('projectId')==='1');
+    req.flush({ lanes: { TODO: [], IN_PROGRESS: [], DONE: [] } });
+  });
+
+  it('updates status via /api/tasks/update', () => {
+    svc.updateStatus(1, 42, 'DONE' as any).subscribe(t => expect((t as any).status).toBe('DONE'));
+    const req = http.expectOne(r => r.method==='PATCH' && r.url.endsWith('/api/tasks/update'));
+    expect(req.request.body).toEqual(jasmine.objectContaining({ projectId: 1, taskId: 42, status: 'DONE' }));
+    req.flush({ id: 42, projectId: 1, title: 'X', status: 'DONE' });
+  });
 });
