@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './home.component';
 import { HealthComponent } from './health.component';
 import { ProjectsPageComponent } from './projects.page';
+import { ProjectCreatePageComponent } from './project-create.page';
+import { ProjectDetailPageComponent } from './project-detail.page';
 import { TasksPageComponent } from './tasks.page';
 import { BoardPageComponent } from './board.page';
 import { NotificationsPageComponent } from './notifications.page';
@@ -10,6 +12,8 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'health', component: HealthComponent },
   { path: 'projects', component: ProjectsPageComponent },
+  { path: 'projects/new', component: ProjectCreatePageComponent },
+  { path: 'projects/:projectId', component: ProjectDetailPageComponent },
   { path: 'tasks', component: TasksPageComponent },
   { path: 'board', component: BoardPageComponent },
   { path: 'notifications', component: NotificationsPageComponent },
