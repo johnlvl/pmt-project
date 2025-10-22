@@ -12,6 +12,8 @@ WORKDIR /usr/share/nginx/html
 COPY --from=build /app/dist/pmt-frontend ./
 COPY ./.nginx/nginx.conf /etc/nginx/conf.d/default.conf
 COPY ./.nginx/entrypoint.sh /docker-entrypoint.d/99-runtime-config.sh
-RUN chmod +x /docker-entrypoint.d/99-runtime-config.sh
+# Normalize line endings and ensure executable
+RUN sed -i 's/\r$//' /docker-entrypoint.d/99-runtime-config.sh \
+	&& chmod +x /docker-entrypoint.d/99-runtime-config.sh
 EXPOSE 80
 ENV API_BASE_URL=/api
