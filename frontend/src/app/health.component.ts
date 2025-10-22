@@ -14,8 +14,8 @@ export class HealthComponent {
   http = inject(HttpClient);
   result = 'No call yet';
   check() {
-    const base = (window as any).RUNTIME_CONFIG?.API_BASE_URL || '/api';
-    this.http.get(`${base}/actuator/health`).subscribe({
+    // Use interceptor-prefixed base URL by calling relative '/api' path
+    this.http.get(`/api/actuator/health`).subscribe({
       next: (res) => this.result = JSON.stringify(res, null, 2),
       error: (err) => this.result = `Error: ${err?.status} ${err?.statusText}`
     });
