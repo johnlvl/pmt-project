@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SpinnerComponent } from './spinner.component';
 import { ErrorBannerComponent } from './error-banner.component';
+import { NotificationService } from './notification.service';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,10 @@ import { ErrorBannerComponent } from './error-banner.component';
         <a routerLink="/projects" routerLinkActive="active" style="color:#fff">Projets</a>
         <a routerLink="/tasks" routerLinkActive="active" style="color:#fff">Tâches</a>
         <a routerLink="/board" routerLinkActive="active" style="color:#fff">Board</a>
-        <a routerLink="/notifications" routerLinkActive="active" style="color:#fff">Notifications</a>
+        <a routerLink="/notifications" routerLinkActive="active" style="color:#fff;position:relative;display:inline-flex;align-items:center;gap:6px">
+          Notifications
+          <span *ngIf="unreadCount>0" style="background:#dc3545;color:#fff;border-radius:12px;padding:2px 6px;font-size:12px;line-height:1">{{ unreadCount }}</span>
+        </a>
         <a routerLink="/health" routerLinkActive="active" style="color:#fff">Health</a>
       </nav>
     </header>
@@ -27,4 +31,11 @@ import { ErrorBannerComponent } from './error-banner.component';
 })
 export class AppComponent {
   config = window.RUNTIME_CONFIG || { API_BASE_URL: '/api' };
+  private readonly notifications = inject(NotificationService);
+  unreadCount = 0;
+
+  ngOnInit(){
+    this.notifications.unreadCount$.subscribe(c => this.unreadCount = c);
+    this.notifications.refreshCount();
+  }
 }
