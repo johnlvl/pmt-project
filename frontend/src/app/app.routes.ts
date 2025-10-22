@@ -10,6 +10,7 @@ import { ProjectTasksPageComponent } from './project-tasks.page';
 import { BoardPageComponent } from './board.page';
 import { ProjectBoardPageComponent } from './project-board.page';
 import { NotificationsPageComponent } from './notifications.page';
+import { TaskDetailPageComponent } from './task-detail.page';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -21,6 +22,7 @@ export const routes: Routes = [
   { path: 'projects/:projectId/tasks', component: ProjectTasksPageComponent },
   { path: 'projects/:projectId/board', component: ProjectBoardPageComponent },
   { path: 'tasks', component: TasksPageComponent },
+  { path: 'tasks/:taskId', component: TaskDetailPageComponent },
   { path: 'board', component: BoardPageComponent },
   { path: 'notifications', component: NotificationsPageComponent },
   { path: '**', redirectTo: '' }
