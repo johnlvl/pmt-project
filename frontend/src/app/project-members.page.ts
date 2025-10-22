@@ -94,7 +94,8 @@ export class ProjectMembersPageComponent {
 
   onChangeRole(m: ProjectMember, role: ProjectRole){
     if (role === m.role) return;
-    this.svc.changeRole(this.projectId, m.userId, role).subscribe({ next: () => m.role = role });
+    // Backend assigns role via email, not userId
+    this.svc.changeRole(this.projectId, m.email, role).subscribe({ next: () => m.role = role });
   }
 
   remove(m: ProjectMember){

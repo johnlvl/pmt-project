@@ -3,10 +3,11 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CreateProjectDto, Project } from './project.model';
+import { SessionService } from './session.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private session: SessionService) {}
 
   list(query?: { q?: string; page?: number; size?: number; sort?: string }): Observable<Project[]> {
     let params = new HttpParams();
@@ -24,6 +25,12 @@ export class ProjectService {
     }
 
   create(payload: CreateProjectDto): Observable<Project> {
-    return this.http.post<Project>(`/api/projects`, payload);
+    // Backend expects { name, description?, startDate?, creatorEmail }
+    const body: any = {
+      name: payload.name,
+      description: payload.description,
+      creatorEmail: this.session.email
+    };
+    return this.http.post<Project>(`/api/projects`, body);
   }
 }

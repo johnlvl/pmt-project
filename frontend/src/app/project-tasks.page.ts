@@ -132,11 +132,10 @@ export class ProjectTasksPageComponent {
   }
 
   update(t: TaskItem, dto: Partial<TaskItem>){
-    this.svc.update(t.id, dto as any).subscribe({ next: (res) => Object.assign(t, res) });
+    this.svc.update(t.projectId, t.id, dto as any).subscribe({ next: (res) => Object.assign(t, res) });
   }
 
   remove(t: TaskItem){
-    if (!confirm(`Supprimer la tâche "${t.title}" ?`)) return;
-    this.svc.remove(t.id).subscribe({ next: () => this.reload() });
+    alert('La suppression de tâche n\'est pas supportée par l\'API backend actuelle.');
   }
 }

@@ -68,9 +68,10 @@ export class ProjectBoardPageComponent {
     this.svc.board(this.projectId).subscribe({
       next: res => {
         const lanes = (res as any)?.lanes || {};
-        this.lanes.TODO = lanes['TODO'] || [];
-        this.lanes.IN_PROGRESS = lanes['IN_PROGRESS'] || [];
-        this.lanes.DONE = lanes['DONE'] || [];
+        // ensure items have title mapped for display
+        this.lanes.TODO = (lanes['TODO'] || []).map((t: any) => ({ ...t, title: t.title ?? t.name }));
+        this.lanes.IN_PROGRESS = (lanes['IN_PROGRESS'] || []).map((t: any) => ({ ...t, title: t.title ?? t.name }));
+        this.lanes.DONE = (lanes['DONE'] || []).map((t: any) => ({ ...t, title: t.title ?? t.name }));
       }
     });
   }

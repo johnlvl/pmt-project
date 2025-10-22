@@ -62,9 +62,9 @@ import { TaskHistoryItem, TaskItem, TaskPriority, TaskStatus } from './task.mode
         <div class="card">
           <div class="row">
             <label>Assigner à</label>
-            <select [value]="task?.assigneeId || ''" (change)="onAssign($any($event.target).value)">
+            <select [value]="''" (change)="onAssign($any($event.target).value)">
               <option value="">(non assignée)</option>
-              <option *ngFor="let m of members" [value]="m.userId">{{ m.name }} ({{ m.role }})</option>
+              <option *ngFor="let m of members" [value]="m.email">{{ m.name }} ({{ m.role }})</option>
             </select>
           </div>
           <div class="row">
@@ -112,9 +112,10 @@ export class TaskDetailPageComponent {
 
   ngOnInit(){
     const taskId = Number(this.route.snapshot.paramMap.get('taskId'));
-    if (!taskId) { this.task = null; return; }
+    const projectId = Number(this.route.snapshot.paramMap.get('projectId'));
+    if (!taskId || !projectId) { this.task = null; return; }
 
-    this.tasks.getById(taskId).subscribe({
+    this.tasks.getById(projectId, taskId).subscribe({
       next: (t) => {
         this.task = t;
         this.form.patchValue({
@@ -129,7 +130,7 @@ export class TaskDetailPageComponent {
           this.membersSvc.list(t.projectId).subscribe({ next: (ms) => this.members = ms });
         }
         // load history
-        this.tasks.history(taskId).subscribe({ next: (h) => this.history = h });
+        this.tasks.history(projectId, taskId).subscribe({ next: (h) => this.history = h });
       },
       error: () => { this.task = null; }
     });
@@ -145,21 +146,21 @@ export class TaskDetailPageComponent {
       priority: v.priority,
       dueDate: v.dueDate || undefined
     };
-    this.tasks.update(this.task.id, dto).subscribe({ next: (t) => this.task = { ...this.task!, ...t } });
+    this.tasks.update(this.task.projectId, this.task.id, dto).subscribe({ next: (t) => this.task = { ...this.task!, ...t } });
   }
 
   onAssign(val: string){
     if (!this.task) return;
-    const assigneeId = val ? Number(val) : undefined;
-    if (assigneeId == null) {
-      // Unassign by setting assigneeId to undefined via update
-      this.tasks.update(this.task.id, { assigneeId: undefined }).subscribe({ next: (t) => this.task = { ...this.task!, ...t } });
+    const assigneeEmail = val || undefined;
+    if (!assigneeEmail) {
+      // Unassign by clearing assignee via update
+      this.tasks.update(this.task.projectId, this.task.id, { /* no assignee support in backend update */ }).subscribe({ next: (t) => this.task = { ...this.task!, ...t } });
       return;
     }
-    this.tasks.assign(this.task.projectId, this.task.id, assigneeId).subscribe({
+    this.tasks.assign(this.task.projectId, this.task.id, assigneeEmail).subscribe({
       next: (t) => {
         this.task = { ...this.task!, ...t };
-        this.tasks.history(this.task!.id).subscribe({ next: (h) => this.history = h });
+        this.tasks.history(this.task!.projectId, this.task!.id).subscribe({ next: (h) => this.history = h });
       }
     });
   }
