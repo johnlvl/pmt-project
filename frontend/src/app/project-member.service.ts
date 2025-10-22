@@ -12,11 +12,15 @@ export class ProjectMemberService {
   }
 
   invite(projectId: number, dto: InviteMemberDto): Observable<void> {
-    return this.http.post<void>(`/api/projects/${projectId}/invitations`, dto);
+    // Backend expects { projectId, email } at /api/invitations
+    const body = { projectId, email: dto.email };
+    return this.http.post<void>(`/api/invitations`, body);
   }
 
-  changeRole(projectId: number, userId: number, role: ProjectRole): Observable<void> {
-    return this.http.patch<void>(`/api/projects/${projectId}/members/${userId}`, { role });
+  changeRole(projectId: number, targetEmail: string, role: ProjectRole): Observable<void> {
+    // Backend role change is POST /api/projects/assign-role with body { projectId, targetEmail, roleName }
+    const body = { projectId, targetEmail, roleName: role } as any;
+    return this.http.post<void>(`/api/projects/assign-role`, body);
   }
 
   remove(projectId: number, userId: number): Observable<void> {

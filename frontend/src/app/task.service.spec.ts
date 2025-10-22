@@ -27,15 +27,14 @@ describe('TaskService', () => {
   });
 
   it('updates task', () => {
-    svc.update(5, { status: 'DONE' as any }).subscribe(t => expect((t as any).status).toBe('DONE'));
-    const req = http.expectOne(r => r.method==='PATCH' && r.url.endsWith('/api/tasks/5'));
-    req.flush({ id: 5, projectId: 1, title: 'T', status: 'DONE' });
+    svc.update(1, 5, { status: 'DONE' as any }).subscribe(t => expect((t as any).status).toBe('DONE'));
+    const req = http.expectOne(r => r.method==='PATCH' && r.url.endsWith('/api/tasks/update'));
+    expect(req.request.body).toEqual(jasmine.objectContaining({ projectId: 1, taskId: 5, status: 'DONE' }));
+    req.flush({ id: 5, projectId: 1, name: 'T', status: 'DONE' });
   });
 
   it('deletes task', () => {
-    svc.remove(5).subscribe(() => expect(true).toBeTrue());
-    const req = http.expectOne(r => r.method==='DELETE' && r.url.endsWith('/api/tasks/5'));
-    req.flush({});
+    expect(() => svc.remove(5)).toThrow();
   });
 
   it('loads board lanes', () => {
@@ -52,14 +51,14 @@ describe('TaskService', () => {
   });
 
   it('gets task by id', () => {
-    svc.getById(10).subscribe(t => expect((t as any).id).toBe(10));
-    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks/10'));
-    req.flush({ id: 10, projectId: 1, title: 'Detail', status: 'TODO' });
+    svc.getById(1, 10).subscribe(t => expect((t as any).id).toBe(10));
+    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks/10') && r.params.get('projectId')==='1');
+    req.flush({ id: 10, projectId: 1, name: 'Detail', status: 'TODO' });
   });
 
   it('loads task history', () => {
-    svc.history(10).subscribe(h => expect(h.length).toBe(2));
-    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks/10/history'));
+    svc.history(1, 10).subscribe(h => expect(h.length).toBe(2));
+    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks/10/history') && r.params.get('projectId')==='1');
     req.flush([
       { id: 1, taskId: 10, type: 'CREATED', message: 'Créée', createdAt: new Date().toISOString() },
       { id: 2, taskId: 10, type: 'STATUS_CHANGED', message: 'TODO -> IN_PROGRESS', createdAt: new Date().toISOString() }
@@ -67,9 +66,9 @@ describe('TaskService', () => {
   });
 
   it('assigns task', () => {
-    svc.assign(1, 10, 7).subscribe(t => expect((t as any).assigneeId).toBe(7));
+    svc.assign(1, 10, 'bob@example.com').subscribe(t => expect((t as any).id).toBe(10));
     const req = http.expectOne(r => r.method==='POST' && r.url.endsWith('/api/tasks/assign'));
-    expect(req.request.body).toEqual(jasmine.objectContaining({ projectId: 1, taskId: 10, assigneeId: 7 }));
-    req.flush({ id: 10, projectId: 1, title: 'Detail', status: 'TODO', assigneeId: 7 });
+    expect(req.request.body).toEqual(jasmine.objectContaining({ projectId: 1, taskId: 10, assigneeEmail: 'bob@example.com' }));
+    req.flush({ id: 10, projectId: 1, name: 'Detail', status: 'TODO' });
   });
 });

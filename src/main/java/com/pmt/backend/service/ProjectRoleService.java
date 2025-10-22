@@ -26,10 +26,31 @@ public class ProjectRoleService {
                 .findByProject_IdAndUser_Email(request.getProjectId(), request.getTargetEmail())
                 .orElseThrow(() -> new ProjectMemberNotFoundException(request.getProjectId(), request.getTargetEmail()));
 
-        Role role = roleRepository.findByName(request.getRoleName())
-                .orElseThrow(() -> new RoleNotFoundException(request.getRoleName()));
+        String canonical = canonicalRoleName(request.getRoleName());
+        Role role = roleRepository.findByName(canonical)
+                .orElseThrow(() -> new RoleNotFoundException(canonical));
 
         member.setRole(role);
         projectMemberRepository.save(member);
+    }
+
+    private String canonicalRoleName(String input) {
+        if (input == null) return null;
+        String n = input.trim();
+        String u = n.toUpperCase();
+        switch (u) {
+            case "OWNER":
+            case "ADMIN":
+            case "ADMINISTRATEUR":
+                return "Administrateur";
+            case "MAINTAINER":
+            case "MAINTENEUR":
+                return "Mainteneur";
+            case "MEMBER":
+            case "MEMBRE":
+                return "Membre";
+            default:
+                return n; // use as-is
+        }
     }
 }

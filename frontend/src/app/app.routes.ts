@@ -22,7 +22,7 @@ export const routes: Routes = [
   { path: 'projects/:projectId/tasks', component: ProjectTasksPageComponent },
   { path: 'projects/:projectId/board', component: ProjectBoardPageComponent },
   { path: 'tasks', component: TasksPageComponent },
-  { path: 'tasks/:taskId', component: TaskDetailPageComponent },
+  { path: 'projects/:projectId/tasks/:taskId', component: TaskDetailPageComponent },
   { path: 'board', component: BoardPageComponent },
   { path: 'notifications', component: NotificationsPageComponent },
   { path: '**', redirectTo: '' }
