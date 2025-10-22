@@ -4,6 +4,7 @@ import { HealthComponent } from './health.component';
 import { ProjectsPageComponent } from './projects.page';
 import { ProjectCreatePageComponent } from './project-create.page';
 import { ProjectDetailPageComponent } from './project-detail.page';
+import { ProjectMembersPageComponent } from './project-members.page';
 import { TasksPageComponent } from './tasks.page';
 import { BoardPageComponent } from './board.page';
 import { NotificationsPageComponent } from './notifications.page';
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'projects', component: ProjectsPageComponent },
   { path: 'projects/new', component: ProjectCreatePageComponent },
   { path: 'projects/:projectId', component: ProjectDetailPageComponent },
+  { path: 'projects/:projectId/members', component: ProjectMembersPageComponent },
   { path: 'tasks', component: TasksPageComponent },
   { path: 'board', component: BoardPageComponent },
   { path: 'notifications', component: NotificationsPageComponent },
