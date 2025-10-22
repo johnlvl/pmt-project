@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { CreateProjectDto, Project } from './project.model';
 
 @Injectable({ providedIn: 'root' })
@@ -13,7 +14,9 @@ export class ProjectService {
     if (query?.page != null) params = params.set('page', query.page);
     if (query?.size != null) params = params.set('size', query.size);
     if (query?.sort) params = params.set('sort', query.sort);
-    return this.http.get<Project[]>(`/api/projects`, { params });
+    return this.http
+      .get<any>(`/api/projects`, { params })
+      .pipe(map(res => (Array.isArray(res) ? res : (res?.content ?? [])) as Project[]));
   }
 
   getById(projectId: number): Observable<Project> {

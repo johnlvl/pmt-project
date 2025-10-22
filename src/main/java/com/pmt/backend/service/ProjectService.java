@@ -12,12 +12,17 @@ import com.pmt.backend.repository.ProjectMemberRepository;
 import com.pmt.backend.repository.ProjectRepository;
 import com.pmt.backend.repository.RoleRepository;
 import com.pmt.backend.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
+
+import com.pmt.backend.exception.ProjectNotFoundException;
 
 @Service
 public class ProjectService {
@@ -58,8 +63,7 @@ public class ProjectService {
         pm.setRole(adminRole);
         projectMemberRepository.save(pm);
 
-        String isoDate = saved.getStartDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(saved.getStartDate()) : null;
-        return new ProjectResponse(saved.getId(), saved.getName(), saved.getDescription(), isoDate);
+        return toResponse(saved);
     }
 
     private Date parseDate(String s) {
@@ -68,5 +72,20 @@ public class ProjectService {
         } catch (ParseException e) {
             throw new IllegalArgumentException("Invalid date format, expected yyyy-MM-dd");
         }
+    }
+
+    public Page<ProjectResponse> list(Pageable pageable) {
+        return projectRepository.findAll(pageable).map(this::toResponse);
+    }
+
+    public ProjectResponse getById(Integer projectId) {
+        return projectRepository.findById(projectId)
+                .map(this::toResponse)
+                .orElseThrow(() -> new ProjectNotFoundException(projectId));
+    }
+
+    private ProjectResponse toResponse(Project p) {
+        String isoDate = p.getStartDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(p.getStartDate()) : null;
+        return new ProjectResponse(p.getId(), p.getName(), p.getDescription(), isoDate);
     }
 }
