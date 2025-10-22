@@ -30,3 +30,13 @@ export interface UpdateTaskDto {
   assigneeId?: number;
   dueDate?: string;
 }
+
+export interface TaskHistoryItem {
+  id: number;
+  taskId: number;
+  type?: 'CREATED' | 'UPDATED' | 'ASSIGNED' | 'STATUS_CHANGED' | 'COMMENT' | string;
+  message?: string;
+  createdAt: string; // ISO datetime
+  actorName?: string;
+  actorId?: number;
+}

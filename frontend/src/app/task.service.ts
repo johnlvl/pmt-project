@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateTaskDto, TaskItem, TaskPriority, TaskStatus, UpdateTaskDto } from './task.model';
+import { CreateTaskDto, TaskHistoryItem, TaskItem, TaskPriority, TaskStatus, UpdateTaskDto } from './task.model';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
@@ -40,5 +40,20 @@ export class TaskService {
     const body: any = { taskId, projectId, status };
     if (requesterEmail) body.requesterEmail = requesterEmail;
     return this.http.patch<TaskItem>(`/api/tasks/update`, body);
+  }
+
+  // US6 — Task detail
+  getById(taskId: number): Observable<TaskItem> {
+    return this.http.get<TaskItem>(`/api/tasks/${taskId}`);
+  }
+
+  history(taskId: number): Observable<TaskHistoryItem[]> {
+    return this.http.get<TaskHistoryItem[]>(`/api/tasks/${taskId}/history`);
+  }
+
+  assign(projectId: number, taskId: number, assigneeId: number, requesterEmail?: string): Observable<TaskItem> {
+    const body: any = { projectId, taskId, assigneeId };
+    if (requesterEmail) body.requesterEmail = requesterEmail;
+    return this.http.post<TaskItem>(`/api/tasks/assign`, body);
   }
 }
