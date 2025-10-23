@@ -39,8 +39,12 @@ public class TaskAssignmentService {
         var assignee = userRepository.findByEmail(req.getAssigneeEmail())
                 .orElseThrow(() -> new UserNotFoundException(req.getAssigneeEmail()));
 
-        boolean requesterIsMember = projectMemberRepository.findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail()).isPresent();
-        if (!requesterIsMember) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+        var requesterPmOpt = projectMemberRepository.findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail());
+        if (requesterPmOpt.isEmpty()) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+        var requesterRole = requesterPmOpt.get().getRole() != null ? requesterPmOpt.get().getRole().getName() : null;
+        if (!"Administrateur".equalsIgnoreCase(requesterRole) && !"Membre".equalsIgnoreCase(requesterRole)) {
+            throw new com.pmt.backend.exception.InsufficientProjectPermissionException("Write permission required");
+        }
 
         boolean assigneeIsMember = projectMemberRepository.findByProject_IdAndUser_Email(req.getProjectId(), assignee.getEmail()).isPresent();
         if (!assigneeIsMember) throw new NotProjectMemberException(req.getProjectId(), assignee.getEmail());

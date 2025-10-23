@@ -3,6 +3,7 @@ package com.pmt.backend.service;
 import com.pmt.backend.dto.TaskAssignRequest;
 import com.pmt.backend.entity.Project;
 import com.pmt.backend.entity.ProjectMember;
+import com.pmt.backend.entity.Role;
 import com.pmt.backend.entity.Task;
 import com.pmt.backend.entity.User;
 import com.pmt.backend.repository.ProjectMemberRepository;
@@ -51,9 +52,14 @@ class TaskAssignmentServiceTest {
         Project p = new Project(); p.setId(1);
         Task t = new Task(); t.setId(10); t.setProject(p); t.setName("Task A");
 
-        Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(requester));
+    Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(requester));
         Mockito.when(userRepository.findByEmail("bob@example.com")).thenReturn(Optional.of(assignee));
-        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(new ProjectMember()));
+    // requester must have write permission (Admin or Membre)
+    ProjectMember requesterMember = new ProjectMember();
+    Role requesterRole = new Role();
+    requesterRole.setName("Membre");
+    requesterMember.setRole(requesterRole);
+    Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(requesterMember));
         Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "bob@example.com")).thenReturn(Optional.of(new ProjectMember()));
         Mockito.when(taskRepository.findById(10)).thenReturn(Optional.of(t));
 

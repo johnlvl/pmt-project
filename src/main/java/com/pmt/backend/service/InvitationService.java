@@ -42,6 +42,18 @@ public class InvitationService {
         Project project = projectRepository.findById(request.getProjectId())
                 .orElseThrow(() -> new IllegalArgumentException("Project not found: " + request.getProjectId()));
 
+        // If requesterEmail provided, enforce Admin role
+        if (request.getRequesterEmail() != null && !request.getRequesterEmail().isBlank()) {
+            var pmOpt = projectMemberRepository.findByProject_IdAndUser_Email(request.getProjectId(), request.getRequesterEmail());
+            if (pmOpt.isEmpty()) {
+                throw new com.pmt.backend.exception.NotProjectMemberException(request.getProjectId(), request.getRequesterEmail());
+            }
+            var roleName = pmOpt.get().getRole() != null ? pmOpt.get().getRole().getName() : null;
+            if (!"Administrateur".equalsIgnoreCase(roleName)) {
+                throw new com.pmt.backend.exception.InsufficientProjectPermissionException("Admin role required");
+            }
+        }
+
         ProjectInvitation inv = new ProjectInvitation();
         inv.setProject(project);
         inv.setEmail(request.getEmail());

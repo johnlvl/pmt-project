@@ -2,6 +2,7 @@ package com.pmt.backend.controller;
 
 import com.pmt.backend.dto.TaskAssignRequest;
 import com.pmt.backend.exception.NotProjectMemberException;
+import com.pmt.backend.exception.InsufficientProjectPermissionException;
 import com.pmt.backend.exception.UserNotFoundException;
 import com.pmt.backend.service.TaskAssignmentService;
 import jakarta.validation.Valid;
@@ -31,6 +32,11 @@ public class TaskAssignmentController {
 
     @ExceptionHandler(NotProjectMemberException.class)
     public ResponseEntity<String> handleNotMember(NotProjectMemberException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientProjectPermissionException.class)
+    public ResponseEntity<String> handleForbidden(InsufficientProjectPermissionException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 }

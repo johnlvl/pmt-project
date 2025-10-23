@@ -22,6 +22,17 @@ public class ProjectRoleService {
 
     @Transactional
     public void assignRole(AssignRoleRequest request) {
+        // Enforce admin for requester when provided
+        if (request.getRequesterEmail() != null && !request.getRequesterEmail().isBlank()) {
+            var pmOpt = projectMemberRepository.findByProject_IdAndUser_Email(request.getProjectId(), request.getRequesterEmail());
+            if (pmOpt.isEmpty()) {
+                throw new com.pmt.backend.exception.NotProjectMemberException(request.getProjectId(), request.getRequesterEmail());
+            }
+            var roleName = pmOpt.get().getRole() != null ? pmOpt.get().getRole().getName() : null;
+            if (!"Administrateur".equalsIgnoreCase(roleName)) {
+                throw new com.pmt.backend.exception.InsufficientProjectPermissionException("Admin role required");
+            }
+        }
         ProjectMember member = projectMemberRepository
                 .findByProject_IdAndUser_Email(request.getProjectId(), request.getTargetEmail())
                 .orElseThrow(() -> new ProjectMemberNotFoundException(request.getProjectId(), request.getTargetEmail()));
@@ -49,6 +60,9 @@ public class ProjectRoleService {
             case "MEMBER":
             case "MEMBRE":
                 return "Membre";
+            case "OBSERVER":
+            case "OBSERVATEUR":
+                return "Observateur";
             default:
                 return n; // use as-is
         }

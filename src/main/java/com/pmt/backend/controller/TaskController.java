@@ -7,6 +7,7 @@ import com.pmt.backend.dto.TaskListItem;
 import com.pmt.backend.dto.TaskBoardResponse;
 import com.pmt.backend.entity.TaskHistory;
 import com.pmt.backend.exception.NotProjectMemberException;
+import com.pmt.backend.exception.InsufficientProjectPermissionException;
 import com.pmt.backend.exception.UserNotFoundException;
 import com.pmt.backend.service.TaskService;
 import jakarta.validation.Valid;
@@ -82,6 +83,11 @@ public class TaskController {
 
     @ExceptionHandler(NotProjectMemberException.class)
     public ResponseEntity<String> handleNotMember(NotProjectMemberException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientProjectPermissionException.class)
+    public ResponseEntity<String> handleForbidden(InsufficientProjectPermissionException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 }
