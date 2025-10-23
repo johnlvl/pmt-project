@@ -11,19 +11,24 @@ import { BoardPageComponent } from './board.page';
 import { ProjectBoardPageComponent } from './project-board.page';
 import { NotificationsPageComponent } from './notifications.page';
 import { TaskDetailPageComponent } from './task-detail.page';
+import { RegisterPageComponent } from './register.page';
+import { LoginPageComponent } from './login.page';
+import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'health', component: HealthComponent },
-  { path: 'projects', component: ProjectsPageComponent },
-  { path: 'projects/new', component: ProjectCreatePageComponent },
-  { path: 'projects/:projectId', component: ProjectDetailPageComponent },
-  { path: 'projects/:projectId/members', component: ProjectMembersPageComponent },
-  { path: 'projects/:projectId/tasks', component: ProjectTasksPageComponent },
-  { path: 'projects/:projectId/board', component: ProjectBoardPageComponent },
-  { path: 'tasks', component: TasksPageComponent },
-  { path: 'projects/:projectId/tasks/:taskId', component: TaskDetailPageComponent },
-  { path: 'board', component: BoardPageComponent },
-  { path: 'notifications', component: NotificationsPageComponent },
+  { path: 'projects', component: ProjectsPageComponent, canActivate: [authGuard] },
+  { path: 'projects/new', component: ProjectCreatePageComponent, canActivate: [authGuard] },
+  { path: 'projects/:projectId', component: ProjectDetailPageComponent, canActivate: [authGuard] },
+  { path: 'projects/:projectId/members', component: ProjectMembersPageComponent, canActivate: [authGuard] },
+  { path: 'projects/:projectId/tasks', component: ProjectTasksPageComponent, canActivate: [authGuard] },
+  { path: 'projects/:projectId/board', component: ProjectBoardPageComponent, canActivate: [authGuard] },
+  { path: 'tasks', component: TasksPageComponent, canActivate: [authGuard] },
+  { path: 'projects/:projectId/tasks/:taskId', component: TaskDetailPageComponent, canActivate: [authGuard] },
+  { path: 'board', component: BoardPageComponent, canActivate: [authGuard] },
+  { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard] },
+  { path: 'register', component: RegisterPageComponent },
+  { path: 'login', component: LoginPageComponent },
   { path: '**', redirectTo: '' }
 ];
