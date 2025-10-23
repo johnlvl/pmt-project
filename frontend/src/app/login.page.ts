@@ -17,28 +17,30 @@ import { SessionService } from './session.service';
     .error{color:#b91c1c;font-size:12px}
   `],
   template: `
-    <div class="card">
-      <h1>Connexion</h1>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <div class="row">
-          <label>Email</label>
-          <input formControlName="email" placeholder="alice@example.com" />
-          <div class="error" *ngIf="form.controls.email.touched && form.controls.email.invalid">
-            Email invalide ou manquant.
+    <section style="min-height:60vh;display:flex;align-items:center;justify-content:center">
+      <div class="card" style="width:100%">
+        <h1 style="margin-top:0;margin-bottom:12px">Connexion</h1>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="row">
+            <label>Email</label>
+            <input formControlName="email" placeholder="alice@example.com" />
+            <div class="error" *ngIf="form.controls.email.touched && form.controls.email.invalid">
+              Email invalide ou manquant.
+            </div>
           </div>
-        </div>
-        <div class="row">
-          <label>Mot de passe</label>
-          <input type="password" formControlName="password" />
-          <div class="error" *ngIf="form.controls.password.touched && form.controls.password.invalid">
-            Mot de passe requis.
+          <div class="row">
+            <label>Mot de passe</label>
+            <input type="password" formControlName="password" />
+            <div class="error" *ngIf="form.controls.password.touched && form.controls.password.invalid">
+              Mot de passe requis.
+            </div>
           </div>
-        </div>
 
-        <button type="submit" [disabled]="form.invalid || loading">Se connecter</button>
-      </form>
-      <p *ngIf="error" class="error" style="margin-top:12px;">{{ error }}</p>
-    </div>
+          <button type="submit" class="btn" [disabled]="form.invalid || loading" style="padding:10px 16px">Se connecter</button>
+        </form>
+        <p *ngIf="error" class="error" style="margin-top:12px;">{{ error }}</p>
+      </div>
+    </section>
   `
 })
 export class LoginPageComponent {

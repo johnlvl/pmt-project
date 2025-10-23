@@ -96,7 +96,7 @@ export class ProjectMembersPageComponent {
     const email = (this.inviteForm.value.email || '').toString();
     this.svc.invite(this.projectId, this.inviteForm.value as any).subscribe({
       next: (invitationId) => {
-        this.inviteForm.reset({ email:'', role:'MEMBER' });
+        this.inviteForm.reset({ email:'', role:'Membre' });
         this.reload();
         this.successMsg = `Invitation envoyée à ${email} (id ${invitationId}).`;
       },
@@ -108,7 +108,6 @@ export class ProjectMembersPageComponent {
 
   onChangeRole(m: ProjectMember, role: ProjectRole){
     if (role === m.role) return;
-    // Backend assigns role via email, not userId
     this.svc.changeRole(this.projectId, m.email, role).subscribe({ next: () => m.role = role });
   }
 

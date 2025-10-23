@@ -21,13 +21,13 @@ describe('ProjectMemberService', () => {
   });
 
   it('invites a member', () => {
-    svc.invite(1, { email: 'a@b.com', role: 'MEMBER' }).subscribe(() => expect(true).toBeTrue());
+    svc.invite(1, { email: 'a@b.com', role: 'Membre' }).subscribe(() => expect(true).toBeTrue());
     const req = http.expectOne(r => r.method==='POST' && r.url.endsWith('/api/invitations'));
     req.flush({});
   });
 
   it('changes role', () => {
-    svc.changeRole(1, 'bob@example.com', 'OWNER').subscribe(() => expect(true).toBeTrue());
+    svc.changeRole(1, 'bob@example.com', 'Administrateur').subscribe(() => expect(true).toBeTrue());
     const req = http.expectOne(r => r.method==='POST' && r.url.endsWith('/api/projects/assign-role'));
     req.flush({});
   });
