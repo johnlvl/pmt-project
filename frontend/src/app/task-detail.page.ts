@@ -6,6 +6,7 @@ import { ProjectMemberService } from './project-member.service';
 import { ProjectMember } from './member.model';
 import { TaskService } from './task.service';
 import { TaskHistoryItem, TaskItem, TaskPriority, TaskStatus } from './task.model';
+import { SessionService } from './session.service';
 
 @Component({
   selector: 'app-task-detail-page',
@@ -55,12 +56,12 @@ import { TaskHistoryItem, TaskItem, TaskPriority, TaskStatus } from './task.mode
               <label>Due date</label>
               <input type="date" formControlName="dueDate" />
             </div>
-            <button type="submit">Enregistrer</button>
+            <button type="submit" *ngIf="canWrite">Enregistrer</button>
           </form>
         </div>
 
         <div class="card">
-          <div class="row">
+          <div class="row" *ngIf="canWrite">
             <label>Assigner à</label>
             <select [value]="''" (change)="onAssign($any($event.target).value)">
               <option value="">(non assignée)</option>
@@ -78,7 +79,7 @@ import { TaskHistoryItem, TaskItem, TaskPriority, TaskStatus } from './task.mode
         <h3>Historique</h3>
         <ul class="timeline">
           <li *ngFor="let h of history">
-            <div>{{ h.message || h.type || 'Événement' }}</div>
+            <div style="white-space:pre-wrap">{{ h.message || h.type || 'Événement' }}</div>
             <div class="meta">{{ h.createdAt | date:'short' }}<span *ngIf="h.actorName"> • {{ h.actorName }}</span></div>
           </li>
         </ul>
@@ -97,10 +98,12 @@ export class TaskDetailPageComponent {
   private readonly router = inject(Router);
   private readonly tasks = inject(TaskService);
   private readonly membersSvc = inject(ProjectMemberService);
+  private readonly session = inject(SessionService);
 
   task: TaskItem | null = null;
   history: TaskHistoryItem[] = [];
   members: ProjectMember[] = [];
+  currentRole: ProjectMember['role'] | null = null;
 
   form = inject(FormBuilder).group({
     title: [''],
@@ -127,7 +130,14 @@ export class TaskDetailPageComponent {
         });
         // load members for assignment
         if (t.projectId) {
-          this.membersSvc.list(t.projectId).subscribe({ next: (ms) => this.members = ms });
+          this.membersSvc.list(t.projectId).subscribe({ next: (ms) => {
+            this.members = ms;
+            const me = ms.find(m => m.email === this.session.email);
+            this.currentRole = me?.role ?? null;
+            if (!this.canWrite) {
+              this.form.disable({ emitEvent: false });
+            }
+          }});
         }
         // load history
         this.tasks.history(projectId, taskId).subscribe({ next: (h) => this.history = h });
@@ -137,7 +147,7 @@ export class TaskDetailPageComponent {
   }
 
   save(){
-    if (!this.task) return;
+    if (!this.task || !this.canWrite) return;
     const v = this.form.value as any;
     const dto = {
       title: v.title,
@@ -150,7 +160,7 @@ export class TaskDetailPageComponent {
   }
 
   onAssign(val: string){
-    if (!this.task) return;
+    if (!this.task || !this.canWrite) return;
     const assigneeEmail = val || undefined;
     if (!assigneeEmail) {
       // Unassign by clearing assignee via update
@@ -166,4 +176,8 @@ export class TaskDetailPageComponent {
   }
 
   back(){ this.router.navigate(['/projects', this.task?.projectId ?? '']); }
+
+  get canWrite(): boolean {
+    return this.currentRole === 'Administrateur' || this.currentRole === 'Membre';
+  }
 }

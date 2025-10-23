@@ -6,7 +6,7 @@ import { HttpClient } from '@angular/common/http';
   standalone: true,
   template: `
     <h2>Health check</h2>
-    <button (click)="check()">Ping backend</button>
+    <button class="btn" (click)="check()">Ping backend</button>
     <pre>{{ result }}</pre>
   `
 })

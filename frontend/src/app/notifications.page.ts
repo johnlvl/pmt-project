@@ -22,7 +22,7 @@ import { NotificationItem } from './notification.model';
           <div class="meta">{{ n.createdAt | date:'short' }}</div>
         </div>
         <div>
-          <button *ngIf="!n.read" (click)="markAsRead(n)">Marquer comme lue</button>
+          <button *ngIf="!n.read" class="btn" (click)="markAsRead(n)">Marquer comme lue</button>
         </div>
       </li>
     </ul>

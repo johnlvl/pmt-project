@@ -5,6 +5,7 @@ import com.pmt.backend.dto.InvitationListItem;
 import com.pmt.backend.entity.InvitationStatus;
 import com.pmt.backend.entity.ProjectInvitation;
 import com.pmt.backend.service.InvitationService;
+import com.pmt.backend.exception.InsufficientProjectPermissionException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,5 +56,10 @@ public class InvitationController {
     public ResponseEntity<Void> decline(@PathVariable Integer id) {
         invitationService.declineInvitation(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(InsufficientProjectPermissionException.class)
+    public ResponseEntity<String> handleForbidden(InsufficientProjectPermissionException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ex.getMessage());
     }
 }

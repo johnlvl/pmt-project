@@ -4,6 +4,7 @@ import com.pmt.backend.dto.TaskCreateRequest;
 import com.pmt.backend.dto.TaskUpdateRequest;
 import com.pmt.backend.entity.Project;
 import com.pmt.backend.entity.ProjectMember;
+import com.pmt.backend.entity.Role;
 import com.pmt.backend.entity.Task;
 import com.pmt.backend.entity.User;
 import com.pmt.backend.exception.NotProjectMemberException;
@@ -55,9 +56,12 @@ class TaskServiceTest {
         User u = new User(); u.setId(1); u.setEmail("alice@example.com");
         Project p = new Project(); p.setId(1);
 
-        Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(u));
-        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com"))
-                .thenReturn(Optional.of(new ProjectMember()));
+    Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(u));
+    ProjectMember pm = new ProjectMember();
+    Role r = new Role(); r.setName("Membre");
+    pm.setRole(r);
+    Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com"))
+        .thenReturn(Optional.of(pm));
         Mockito.when(projectRepository.findById(1)).thenReturn(Optional.of(p));
 
         Task saved = new Task(); saved.setId(10); saved.setProject(p); saved.setName("Task A"); saved.setPriority("MEDIUM"); saved.setStatus("TODO");
@@ -80,8 +84,11 @@ class TaskServiceTest {
         Project p = new Project(); p.setId(1);
         Task t = new Task(); t.setId(10); t.setProject(p); t.setStatus("TODO");
 
-        Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(u));
-        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(new ProjectMember()));
+    Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(u));
+    ProjectMember pm = new ProjectMember();
+    Role r = new Role(); r.setName("Membre");
+    pm.setRole(r);
+    Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(pm));
         Mockito.when(taskRepository.findById(10)).thenReturn(Optional.of(t));
         Mockito.when(taskRepository.save(Mockito.any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 

@@ -11,7 +11,6 @@ import { InvitationService, InvitationListItem } from './invitation.service';
     table{border-collapse:collapse;width:100%}
     th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:left}
     .row-actions{display:flex;gap:8px}
-    button{padding:6px 10px}
     .muted{color:#6b7280}
   `],
   template: `
@@ -33,14 +32,14 @@ import { InvitationService, InvitationListItem } from './invitation.service';
           <td>{{ inv.createdAt | date:'mediumDate' }}</td>
           <td>{{ inv.status }}</td>
           <td class="row-actions">
-            <button (click)="accept(inv)" [disabled]="loadingIds.has(inv.id)">Accepter</button>
-            <button (click)="decline(inv)" [disabled]="loadingIds.has(inv.id)" style="background:#ef4444;color:#fff;border:none;border-radius:4px">Refuser</button>
+            <button (click)="accept(inv)" class="btn" [disabled]="loadingIds.has(inv.id)">Accepter</button>
+            <button (click)="decline(inv)" class="btn btn-danger" [disabled]="loadingIds.has(inv.id)">Refuser</button>
           </td>
         </tr>
       </tbody>
     </table>
     <ng-template #empty>
-      <p>Aucune invitation en attente.</p>
+      <p class="muted">Aucune invitation en attente.</p>
     </ng-template>
   `
 })

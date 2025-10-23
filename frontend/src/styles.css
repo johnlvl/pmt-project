@@ -1,3 +1,32 @@
 /* basic styles */
 html, body { height: 100%; }
 body { margin: 0; font-family: Arial, Helvetica, sans-serif; }
+
+/* shared nav link style */
+.nav-link {
+	color: #fff;
+	text-decoration: none;
+}
+.nav-link:hover {
+	text-decoration: none;
+	opacity: .9;
+}
+.nav-link.active {
+	text-decoration: none;
+	font-weight: 600;
+}
+
+/* shared buttons */
+.btn {
+	display: inline-block;
+	background: #0d6efd;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 8px 12px;
+	text-decoration: none;
+}
+.btn:hover { opacity: .95; }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+.btn.btn-secondary { background: #111827; color: #fff; }
+.btn.btn-danger { background: #ef4444; color: #fff; }

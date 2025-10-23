@@ -70,7 +70,26 @@ export class TaskService {
 
   history(projectId: number, taskId: number): Observable<TaskHistoryItem[]> {
     const params = new HttpParams().set('projectId', projectId).set('requesterEmail', this.session.email);
-    return this.http.get<TaskHistoryItem[]>(`/api/tasks/${taskId}/history`, { params });
+    return this.http.get<any[]>(`/api/tasks/${taskId}/history`, { params }).pipe(
+      map(list => (list || []).map(h => this.mapHistoryItem(h)))
+    );
+  }
+
+  private mapHistoryItem(h: any): TaskHistoryItem {
+    // Support both backend entity shape and already-mapped DTOs
+    const createdAt = h.createdAt ?? h.changeDate;
+    const message = h.message ?? h.changeDescription ?? h.type ?? 'Événement';
+    const actor = h.changedBy ?? null;
+    const taskRef = h.task ?? null;
+    return {
+      id: h.id,
+      taskId: h.taskId ?? (taskRef?.id ?? 0),
+      message,
+      createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+      actorName: h.actorName ?? (actor?.username ?? actor?.email ?? undefined),
+      actorId: h.actorId ?? (actor?.id ?? undefined),
+      type: h.type
+    } as TaskHistoryItem;
   }
 
   assign(projectId: number, taskId: number, assigneeEmail: string, requesterEmail?: string): Observable<TaskItem> {

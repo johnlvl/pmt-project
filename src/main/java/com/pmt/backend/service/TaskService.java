@@ -56,11 +56,13 @@ public class TaskService {
         var requester = userRepository.findByEmail(req.getRequesterEmail())
                 .orElseThrow(() -> new UserNotFoundException(req.getRequesterEmail()));
 
-        // requester must be a member of the project
-        boolean isMember = projectMemberRepository
-                .findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail())
-                .isPresent();
-        if (!isMember) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+    // requester must have write permission (Admin or Membre)
+    var pmOpt = projectMemberRepository.findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail());
+    if (pmOpt.isEmpty()) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+    var roleName = pmOpt.get().getRole() != null ? pmOpt.get().getRole().getName() : null;
+    if (!"Administrateur".equalsIgnoreCase(roleName) && !"Membre".equalsIgnoreCase(roleName)) {
+        throw new com.pmt.backend.exception.InsufficientProjectPermissionException("Write permission required");
+    }
 
         Project project = projectRepository.findById(req.getProjectId())
                 .orElseThrow(() -> new RuntimeException("Project not found: " + req.getProjectId()));
@@ -107,10 +109,12 @@ public class TaskService {
         var requester = userRepository.findByEmail(req.getRequesterEmail())
                 .orElseThrow(() -> new UserNotFoundException(req.getRequesterEmail()));
 
-        boolean isMember = projectMemberRepository
-                .findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail())
-                .isPresent();
-        if (!isMember) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+    var pmOpt = projectMemberRepository.findByProject_IdAndUser_Email(req.getProjectId(), requester.getEmail());
+    if (pmOpt.isEmpty()) throw new NotProjectMemberException(req.getProjectId(), requester.getEmail());
+    var roleName = pmOpt.get().getRole() != null ? pmOpt.get().getRole().getName() : null;
+    if (!"Administrateur".equalsIgnoreCase(roleName) && !"Membre".equalsIgnoreCase(roleName)) {
+        throw new com.pmt.backend.exception.InsufficientProjectPermissionException("Write permission required");
+    }
 
         Task task = taskRepository.findById(req.getTaskId())
                 .orElseThrow(() -> new RuntimeException("Task not found: " + req.getTaskId()));
@@ -260,8 +264,12 @@ public class TaskService {
     public void delete(Integer taskId, Integer projectId, String requesterEmail) {
         var requester = userRepository.findByEmail(requesterEmail)
                 .orElseThrow(() -> new UserNotFoundException(requesterEmail));
-        boolean isMember = projectMemberRepository.findByProject_IdAndUser_Email(projectId, requester.getEmail()).isPresent();
-        if (!isMember) throw new NotProjectMemberException(projectId, requester.getEmail());
+        var pmOpt = projectMemberRepository.findByProject_IdAndUser_Email(projectId, requester.getEmail());
+        if (pmOpt.isEmpty()) throw new NotProjectMemberException(projectId, requester.getEmail());
+        var roleName = pmOpt.get().getRole() != null ? pmOpt.get().getRole().getName() : null;
+        if (!"Administrateur".equalsIgnoreCase(roleName) && !"Membre".equalsIgnoreCase(roleName)) {
+            throw new com.pmt.backend.exception.InsufficientProjectPermissionException("Write permission required");
+        }
 
         var task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found: " + taskId));
