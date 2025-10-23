@@ -8,6 +8,7 @@ export interface TaskItem {
   description?: string;
   status: TaskStatus;
   priority?: TaskPriority;
+  assigneeEmail?: string;
   assigneeId?: number;
   dueDate?: string; // ISO date
 }
@@ -18,6 +19,7 @@ export interface CreateTaskDto {
   description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  assigneeEmail?: string;
   assigneeId?: number;
   dueDate?: string;
 }
@@ -27,6 +29,7 @@ export interface UpdateTaskDto {
   description?: string;
   status?: TaskStatus;
   priority?: TaskPriority;
+  assigneeEmail?: string;
   assigneeId?: number;
   dueDate?: string;
 }

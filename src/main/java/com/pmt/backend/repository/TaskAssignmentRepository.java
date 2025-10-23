@@ -15,4 +15,6 @@ public interface TaskAssignmentRepository extends JpaRepository<TaskAssignment, 
                                                          @Param("email") String email);
 
     List<TaskAssignment> findByTask_Id(Integer taskId);
+
+    List<TaskAssignment> findByTask_IdIn(java.util.List<Integer> taskIds);
 }

@@ -1,11 +1,16 @@
 package com.pmt.backend.controller;
 
 import com.pmt.backend.dto.InvitationSendRequest;
+import com.pmt.backend.dto.InvitationListItem;
+import com.pmt.backend.entity.InvitationStatus;
+import com.pmt.backend.entity.ProjectInvitation;
 import com.pmt.backend.service.InvitationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/invitations")
@@ -20,6 +25,24 @@ public class InvitationController {
     public ResponseEntity<Integer> send(@Valid @RequestBody InvitationSendRequest request) {
         Integer id = invitationService.sendInvitation(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(id);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<InvitationListItem>> list(
+            @RequestParam String email,
+            @RequestParam(name = "status", required = false, defaultValue = "PENDING") String status
+    ) {
+        InvitationStatus st = InvitationStatus.valueOf(status.toUpperCase());
+        List<ProjectInvitation> list = invitationService.getInvitationsFor(email, st);
+        List<InvitationListItem> items = list.stream().map(inv -> new InvitationListItem(
+                inv.getId(),
+                inv.getProject().getId(),
+                inv.getProject().getName(),
+                inv.getEmail(),
+                inv.getStatus(),
+                inv.getCreatedAt()
+        )).collect(Collectors.toList());
+        return ResponseEntity.ok(items);
     }
 
     @PostMapping("/{id}/accept")

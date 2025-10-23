@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface TaskHistoryRepository extends JpaRepository<TaskHistory, Integer> {
 	List<TaskHistory> findByTask_IdOrderByChangeDateDesc(Integer taskId);
+	void deleteByTask_Id(Integer taskId);
 }

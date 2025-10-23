@@ -34,7 +34,9 @@ describe('TaskService', () => {
   });
 
   it('deletes task', () => {
-    expect(() => svc.remove(5)).toThrow();
+    svc.remove(1, 5).subscribe(() => expect(true).toBeTrue());
+    const req = http.expectOne(r => r.method==='DELETE' && r.url.endsWith('/api/tasks/5') && r.params.get('projectId')==='1');
+    req.flush(null);
   });
 
   it('loads board lanes', () => {

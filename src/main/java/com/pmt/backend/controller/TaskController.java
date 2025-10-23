@@ -66,6 +66,15 @@ public class TaskController {
         return ResponseEntity.ok(taskService.history(taskId, projectId, requesterEmail));
     }
 
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<Void> delete(
+            @PathVariable Integer taskId,
+            @RequestParam Integer projectId,
+            @RequestParam String requesterEmail) {
+        taskService.delete(taskId, projectId, requesterEmail);
+        return ResponseEntity.noContent().build();
+    }
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
