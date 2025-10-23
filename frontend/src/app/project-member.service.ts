@@ -11,10 +11,10 @@ export class ProjectMemberService {
     return this.http.get<ProjectMember[]>(`/api/projects/${projectId}/members`);
   }
 
-  invite(projectId: number, dto: InviteMemberDto): Observable<void> {
-    // Backend expects { projectId, email } at /api/invitations
+  invite(projectId: number, dto: InviteMemberDto): Observable<number> {
+    // Backend expects { projectId, email } at /api/invitations and returns the invitation id (Integer)
     const body = { projectId, email: dto.email };
-    return this.http.post<void>(`/api/invitations`, body);
+    return this.http.post<number>(`/api/invitations`, body);
   }
 
   changeRole(projectId: number, targetEmail: string, role: ProjectRole): Observable<void> {

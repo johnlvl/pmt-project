@@ -19,6 +19,7 @@ import { Router } from '@angular/router';
         <a routerLink="/projects" routerLinkActive="active" style="color:#fff">Projets</a>
         <a routerLink="/tasks" routerLinkActive="active" style="color:#fff">Tâches</a>
         <a routerLink="/board" routerLinkActive="active" style="color:#fff">Board</a>
+        <a routerLink="/invitations" routerLinkActive="active" style="color:#fff">Mes invitations</a>
         <a routerLink="/notifications" routerLinkActive="active" style="color:#fff;position:relative;display:inline-flex;align-items:center;gap:6px">
           Notifications
           <span *ngIf="unreadCount>0" style="background:#dc3545;color:#fff;border-radius:12px;padding:2px 6px;font-size:12px;line-height:1">{{ unreadCount }}</span>

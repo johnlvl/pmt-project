@@ -11,6 +11,8 @@ import com.pmt.backend.repository.RoleRepository;
 import com.pmt.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import com.pmt.backend.entity.InvitationStatus;
 
 @Service
 public class InvitationService {
@@ -19,17 +21,20 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final EmailService emailService;
 
     public InvitationService(ProjectRepository projectRepository,
                              ProjectInvitationRepository invitationRepository,
                              UserRepository userRepository,
                              RoleRepository roleRepository,
-                             ProjectMemberRepository projectMemberRepository) {
+                             ProjectMemberRepository projectMemberRepository,
+                             EmailService emailService) {
         this.projectRepository = projectRepository;
         this.invitationRepository = invitationRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -41,6 +46,16 @@ public class InvitationService {
         inv.setProject(project);
         inv.setEmail(request.getEmail());
         invitationRepository.save(inv);
+
+        // Send email notification (mocked via NoopEmailService)
+        try {
+            String subject = "Invitation à rejoindre le projet: " + project.getName();
+            String body = "Vous avez été invité à rejoindre le projet '" + project.getName() + "'.\n" +
+                    "Connectez-vous puis acceptez l'invitation (flux d'acceptation simplifié dans cette version).";
+            emailService.send(request.getEmail(), subject, body);
+        } catch (Exception ignored) {
+            // Best effort: ne bloque pas l'invitation si l'envoi d'email échoue
+        }
         return inv.getId();
     }
 
@@ -74,5 +89,10 @@ public class InvitationService {
                 .orElseThrow(() -> new InvitationNotFoundException(invitationId));
         inv.setStatus(InvitationStatus.DECLINED);
         invitationRepository.save(inv);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProjectInvitation> getInvitationsFor(String email, InvitationStatus status) {
+        return invitationRepository.findByEmailAndStatusOrderByCreatedAtDesc(email, status);
     }
 }

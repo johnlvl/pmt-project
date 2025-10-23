@@ -192,11 +192,28 @@ public class TaskService {
             tasks = taskRepository.findByProject_Id(projectId);
         }
         var fmt = new java.text.SimpleDateFormat("yyyy-MM-dd");
-        return tasks.stream()
-                .map(t -> new TaskListItem(
-                        t.getId(), t.getName(), t.getStatus(), t.getPriority(),
-                        t.getDueDate() != null ? fmt.format(t.getDueDate()) : null))
-                .toList();
+        // Build assignment map (taskId -> assigneeEmail) to preselect current assignee in UI
+        java.util.Map<Integer, String> assignmentMap = new java.util.HashMap<>();
+        if (!tasks.isEmpty()) {
+            var taskIds = tasks.stream().map(Task::getId).toList();
+            var tas = taskAssignmentRepository.findByTask_IdIn(taskIds);
+            for (var ta : tas) {
+                if (ta.getTask() != null) {
+                    var email = ta.getUser() != null ? ta.getUser().getEmail() : null;
+                    assignmentMap.put(ta.getTask().getId(), email);
+                }
+            }
+        }
+    return tasks.stream()
+        .map(t -> {
+            TaskListItem item = new TaskListItem(
+                t.getId(), t.getName(), t.getStatus(), t.getPriority(),
+                t.getDueDate() != null ? fmt.format(t.getDueDate()) : null);
+            item.description = t.getDescription();
+            item.assigneeEmail = assignmentMap.get(t.getId());
+            return item;
+        })
+        .toList();
     }
 
     @Transactional(readOnly = true)
@@ -237,5 +254,24 @@ public class TaskService {
             throw new IllegalArgumentException("Task does not belong to project " + projectId);
         }
         return taskHistoryRepository.findByTask_IdOrderByChangeDateDesc(taskId);
+    }
+
+    @Transactional
+    public void delete(Integer taskId, Integer projectId, String requesterEmail) {
+        var requester = userRepository.findByEmail(requesterEmail)
+                .orElseThrow(() -> new UserNotFoundException(requesterEmail));
+        boolean isMember = projectMemberRepository.findByProject_IdAndUser_Email(projectId, requester.getEmail()).isPresent();
+        if (!isMember) throw new NotProjectMemberException(projectId, requester.getEmail());
+
+        var task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found: " + taskId));
+        if (task.getProject() == null || task.getProject().getId() == null || !task.getProject().getId().equals(projectId)) {
+            throw new IllegalArgumentException("Task does not belong to project " + projectId);
+        }
+
+        // Clean dependent data then delete task
+        taskAssignmentRepository.deleteByTask_Id(taskId);
+        taskHistoryRepository.deleteByTask_Id(taskId);
+        taskRepository.deleteById(taskId);
     }
 }

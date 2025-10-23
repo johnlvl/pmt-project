@@ -14,6 +14,7 @@ import { TaskDetailPageComponent } from './task-detail.page';
 import { RegisterPageComponent } from './register.page';
 import { LoginPageComponent } from './login.page';
 import { authGuard } from './auth.guard';
+import { MyInvitationsPageComponent } from './my-invitations.page';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: 'projects/:projectId/tasks/:taskId', component: TaskDetailPageComponent, canActivate: [authGuard] },
   { path: 'board', component: BoardPageComponent, canActivate: [authGuard] },
   { path: 'notifications', component: NotificationsPageComponent, canActivate: [authGuard] },
+  { path: 'invitations', component: MyInvitationsPageComponent, canActivate: [authGuard] },
   { path: 'register', component: RegisterPageComponent },
   { path: 'login', component: LoginPageComponent },
   { path: '**', redirectTo: '' }

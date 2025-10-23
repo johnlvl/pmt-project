@@ -20,6 +20,8 @@ import { RoleBadgeComponent } from './role-badge.component';
   `],
   template: `
     <h1>Membres du projet</h1>
+    <div *ngIf="successMsg" style="margin:8px 0; padding:8px 12px; background:#ecfdf5; color:#065f46; border:1px solid #10b981; border-radius:6px">{{ successMsg }}</div>
+    <div *ngIf="errorMsg" style="margin:8px 0; padding:8px 12px; background:#fef2f2; color:#991b1b; border:1px solid #ef4444; border-radius:6px">{{ errorMsg }}</div>
     <form [formGroup]="inviteForm" (ngSubmit)="invite()">
       <div>
         <label>Email</label><br />
@@ -47,9 +49,9 @@ import { RoleBadgeComponent } from './role-badge.component';
           <td>
             <app-role-badge [role]="m.role"></app-role-badge>
             <select [value]="m.role" (change)="onChangeRole(m, $any($event.target).value)">
-              <option value="MEMBER">MEMBER</option>
-              <option value="MAINTAINER">MAINTAINER</option>
-              <option value="OWNER">OWNER</option>
+              <option value="MEMBER">Membre</option>
+              <option value="MAINTAINER">Mainteneur</option>
+              <option value="OWNER">Propriétaire</option>
             </select>
           </td>
           <td class="row-actions">
@@ -70,6 +72,8 @@ export class ProjectMembersPageComponent {
 
   projectId!: number;
   members: ProjectMember[] = [];
+  successMsg = '';
+  errorMsg = '';
 
   inviteForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -87,8 +91,18 @@ export class ProjectMembersPageComponent {
 
   invite(){
     if (this.inviteForm.invalid) return;
+    this.successMsg = '';
+    this.errorMsg = '';
+    const email = (this.inviteForm.value.email || '').toString();
     this.svc.invite(this.projectId, this.inviteForm.value as any).subscribe({
-      next: () => { this.inviteForm.reset({ email:'', role:'MEMBER' }); this.reload(); }
+      next: (invitationId) => {
+        this.inviteForm.reset({ email:'', role:'MEMBER' });
+        this.reload();
+        this.successMsg = `Invitation envoyée à ${email} (id ${invitationId}).`;
+      },
+      error: (err) => {
+        this.errorMsg = err?.error?.message || 'Échec de l\'invitation. Vérifiez l\'email et réessayez.';
+      }
     });
   }
 

@@ -46,9 +46,9 @@ export class TaskService {
     return this.http.patch<any>(`/api/tasks/update`, body).pipe(map(res => this.mapTaskResponseToTaskItem(res)));
   }
 
-  // remove is not supported by current backend
-  remove(_taskId: number): Observable<void> {
-    throw new Error('Task deletion is not supported by the current backend API');
+  remove(projectId: number, taskId: number): Observable<void> {
+    const params = new HttpParams().set('projectId', projectId).set('requesterEmail', this.session.email);
+    return this.http.delete<void>(`/api/tasks/${taskId}`, { params });
   }
 
   // Board (Kanban)
@@ -101,7 +101,8 @@ export class TaskService {
       description: it.description,
       status: it.status,
       priority: it.priority,
-      dueDate: it.dueDate
+      dueDate: it.dueDate,
+      assigneeEmail: it.assigneeEmail
     } as TaskItem;
   }
 }
