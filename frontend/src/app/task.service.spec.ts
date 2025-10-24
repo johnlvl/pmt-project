@@ -20,6 +20,13 @@ describe('TaskService', () => {
     req.flush([]);
   });
 
+  it('lists tasks with assigneeEmail filter', () => {
+    svc.list(1, { assigneeEmail: 'bob@example.com' }).subscribe(items => expect(items).toEqual([]));
+    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks') && r.params.get('projectId')==='1');
+    expect(req.request.params.get('assigneeEmail')).toBe('bob@example.com');
+    req.flush([]);
+  });
+
   it('creates task', () => {
     svc.create({ projectId: 1, title: 'T' }).subscribe(task => expect((task as any).title).toBe('T'));
     const req = http.expectOne(r => r.method==='POST' && r.url.endsWith('/api/tasks'));
@@ -64,6 +71,23 @@ describe('TaskService', () => {
     req.flush([
       { id: 1, taskId: 10, type: 'CREATED', message: 'Créée', createdAt: new Date().toISOString() },
       { id: 2, taskId: 10, type: 'STATUS_CHANGED', message: 'TODO -> IN_PROGRESS', createdAt: new Date().toISOString() }
+    ]);
+  });
+
+  it('maps history fallback fields (changeDate, changedBy)', () => {
+    svc.history(2, 11).subscribe(list => {
+      expect(list.length).toBe(1);
+      const h = list[0] as any;
+      expect(h.taskId).toBe(11);
+      // createdAt is ISO string
+      expect(typeof h.createdAt).toBe('string');
+      expect(h.actorId).toBe(9);
+      expect(h.actorName).toBe('x@y'); // fallback to actor.email
+      expect(h.message).toBeDefined();
+    });
+    const req = http.expectOne(r => r.method==='GET' && r.url.endsWith('/api/tasks/11/history') && r.params.get('projectId')==='2');
+    req.flush([
+      { id: 7, taskId: 11, type: 'UPDATED', changeDate: '2025-01-01T00:00:00.000Z', changedBy: { id: 9, email: 'x@y' } }
     ]);
   });
 
