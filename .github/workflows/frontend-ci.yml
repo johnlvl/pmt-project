@@ -2,12 +2,12 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, main ]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
-    branches: [ develop ]
+    branches: [ develop, main ]
     paths:
       - 'frontend/**'
   workflow_dispatch:
@@ -30,10 +30,10 @@ jobs:
       - name: Test
         run: npm run test
       - name: Coverage (artifact)
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/develop'
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
         run: npm run coverage:ci
       - name: Upload coverage
-        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/develop'
+        if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage
@@ -55,6 +55,16 @@ jobs:
         with:
           username: ${{ env.DOCKERHUB_LOGIN_USERNAME }}
           password: ${{ env.DOCKERHUB_LOGIN_TOKEN }}
+      - name: Read package.json version
+        id: pkg
+        shell: bash
+        run: |
+          ver=$(node -p "require('./package.json').version" || true)
+          ver_trimmed=$(echo "$ver" | tr -d ' \n\r')
+          if [ -z "$ver_trimmed" ]; then
+            ver_trimmed=${GITHUB_SHA::7}
+          fi
+          echo "version=$ver_trimmed" >> $GITHUB_OUTPUT
       - name: Resolve namespace
         id: ns
         shell: bash
@@ -64,13 +74,6 @@ jobs:
         run: |
           ns=${NAMESPACE:-$LOGIN_USER}
           echo "namespace=$ns" >> $GITHUB_OUTPUT
-      - name: Compute tags
-        id: tags
-        shell: bash
-        run: |
-          sha=${GITHUB_SHA::7}
-          echo "latest,${sha}" | tr -d '\n' > tags.txt
-          echo "list=$(cat tags.txt)" >> $GITHUB_OUTPUT
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -78,7 +81,7 @@ jobs:
           push: ${{ env.DOCKERHUB_LOGIN_USERNAME != '' && env.DOCKERHUB_LOGIN_TOKEN != '' }}
           tags: |
             ${{ steps.ns.outputs.namespace }}/pmt-frontend:latest
-            ${{ steps.ns.outputs.namespace }}/pmt-frontend:${{ github.sha }}
+            ${{ steps.ns.outputs.namespace }}/pmt-frontend:${{ steps.pkg.outputs.version }}
     env:
       DOCKERHUB_LOGIN_USERNAME: ${{ secrets.DOCKERHUB_LOGIN_USERNAME }}
       DOCKERHUB_LOGIN_TOKEN: ${{ secrets.DOCKERHUB_LOGIN_TOKEN }}
