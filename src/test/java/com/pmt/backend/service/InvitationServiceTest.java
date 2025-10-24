@@ -18,7 +18,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class InvitationServiceTest {
@@ -46,6 +47,79 @@ class InvitationServiceTest {
 
         Integer id = invitationService.sendInvitation(req);
         assertEquals(10, id);
+    }
+
+    @Test
+    void sendInvitation_withRequesterNotMember_shouldFail() {
+        InvitationSendRequest req = new InvitationSendRequest();
+        req.setProjectId(1);
+        req.setEmail("bob@example.com");
+        req.setRequesterEmail("alice@example.com");
+
+        when(projectRepository.findById(1)).thenReturn(Optional.of(new Project()));
+        when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(com.pmt.backend.exception.NotProjectMemberException.class, () -> invitationService.sendInvitation(req));
+    }
+
+    @Test
+    void sendInvitation_withRequesterNotAdmin_shouldFail() {
+        InvitationSendRequest req = new InvitationSendRequest();
+        req.setProjectId(1);
+        req.setEmail("bob@example.com");
+        req.setRequesterEmail("alice@example.com");
+
+        when(projectRepository.findById(1)).thenReturn(Optional.of(new Project()));
+        var pm = new com.pmt.backend.entity.ProjectMember();
+        var r = new com.pmt.backend.entity.Role();
+        r.setName("Membre");
+        pm.setRole(r);
+        when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(pm));
+
+        assertThrows(com.pmt.backend.exception.InsufficientProjectPermissionException.class, () -> invitationService.sendInvitation(req));
+    }
+
+    @Test
+    void sendInvitation_projectNotFound_shouldFail() {
+        InvitationSendRequest req = new InvitationSendRequest();
+        req.setProjectId(999);
+        req.setEmail("bob@example.com");
+
+        when(projectRepository.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> invitationService.sendInvitation(req));
+    }
+
+    @Test
+    void sendInvitation_emailSendFails_shouldNotThrow() {
+        // Use real service with mocked email to simulate exception path
+        InvitationSendRequest req = new InvitationSendRequest();
+        req.setProjectId(1);
+        req.setEmail("bob@example.com");
+
+        var project = new Project();
+        project.setId(1);
+        project.setName("P");
+        when(projectRepository.findById(1)).thenReturn(Optional.of(project));
+        when(invitationRepository.save(any(ProjectInvitation.class))).thenAnswer(inv -> {
+            ProjectInvitation pi = inv.getArgument(0);
+            pi.setId(11);
+            return pi;
+        });
+
+        // Replace emailService in InvitationService via reflection to throw
+        var emailService = mock(EmailService.class);
+        doThrow(new RuntimeException("smtp down")).when(emailService).send(anyString(), anyString(), anyString());
+        // Inject mocked emailService
+        var field = InvitationService.class.getDeclaredFields();
+        for (var f : field) {
+            if (f.getType().getSimpleName().equals("EmailService")) {
+                f.setAccessible(true);
+                try { f.set(invitationService, emailService); } catch (IllegalAccessException ignored) {}
+            }
+        }
+
+        assertDoesNotThrow(() -> invitationService.sendInvitation(req));
     }
 
     @Test
