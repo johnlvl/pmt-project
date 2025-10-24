@@ -1,0 +1,30 @@
+# Docker build context excludes
+
+# Git
+.git/
+.gitignore
+.github/
+
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Maven/Build outputs
+/target/
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Node/Front caches if any
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local properties
+application-local.properties
