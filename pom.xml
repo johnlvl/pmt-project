@@ -126,6 +126,16 @@
 								<goals>
 									<goal>prepare-agent</goal>
 								</goals>
+								<configuration>
+									<!-- Exclude Mockito/ByteBuddy generated classes which can use newer classfile versions -->
+									<excludes>
+										<exclude>org/mockito/**</exclude>
+										<exclude>net/bytebuddy/**</exclude>
+										<!-- Exclude dynamically generated Mockito classes in our packages -->
+										<exclude>**/*$MockitoMock$*</exclude>
+										<exclude>**/*$auxiliary$*</exclude>
+									</excludes>
+								</configuration>
 							</execution>
 							<execution>
 								<id>report</id>

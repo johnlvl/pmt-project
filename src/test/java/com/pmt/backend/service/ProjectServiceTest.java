@@ -94,4 +94,18 @@ class ProjectServiceTest {
         assertThrows(RoleNotFoundException.class, () -> projectService.create(req));
         verify(projectRepository, never()).save(any());
     }
+
+    @Test
+    void create_withInvalidDate_shouldThrow() {
+        ProjectCreateRequest req = new ProjectCreateRequest();
+        req.setName("Projet");
+        req.setDescription("Desc");
+        req.setStartDate("2025/09/01"); // invalid format
+        req.setCreatorEmail("alice@example.com");
+
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(new User()));
+        when(roleRepository.findByName("Administrateur")).thenReturn(Optional.of(new Role()));
+
+        assertThrows(IllegalArgumentException.class, () -> projectService.create(req));
+    }
 }

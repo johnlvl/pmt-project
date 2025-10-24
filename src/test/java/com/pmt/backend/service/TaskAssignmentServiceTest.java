@@ -68,4 +68,51 @@ class TaskAssignmentServiceTest {
     verify(notificationService).notifyUserForTask(ArgumentMatchers.eq("bob@example.com"), ArgumentMatchers.eq(10), ArgumentMatchers.contains("Task A"));
     verify(emailService).send(ArgumentMatchers.eq("bob@example.com"), ArgumentMatchers.contains("assignation"), ArgumentMatchers.contains("Task A"));
     }
+
+    @Test
+    void assign_fails_whenRequesterNotMember() {
+        TaskAssignRequest req = new TaskAssignRequest();
+        req.setTaskId(10);
+        req.setProjectId(1);
+        req.setRequesterEmail("alice@example.com");
+        req.setAssigneeEmail("bob@example.com");
+
+        User requester = new User(); requester.setEmail("alice@example.com");
+        User assignee = new User(); assignee.setEmail("bob@example.com");
+        Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(requester));
+        Mockito.when(userRepository.findByEmail("bob@example.com")).thenReturn(Optional.of(assignee));
+        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.empty());
+
+        org.junit.jupiter.api.Assertions.assertThrows(com.pmt.backend.exception.NotProjectMemberException.class, () -> service.assign(req));
+        Mockito.verifyNoInteractions(taskRepository);
+    }
+
+    @Test
+    void assign_fails_whenTaskNotBelongingToProject() {
+        TaskAssignRequest req = new TaskAssignRequest();
+        req.setTaskId(10);
+        req.setProjectId(1);
+        req.setRequesterEmail("alice@example.com");
+        req.setAssigneeEmail("bob@example.com");
+
+        User requester = new User(); requester.setEmail("alice@example.com");
+        User assignee = new User(); assignee.setEmail("bob@example.com");
+        Mockito.when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(requester));
+        Mockito.when(userRepository.findByEmail("bob@example.com")).thenReturn(Optional.of(assignee));
+
+        // requester has write permission
+        ProjectMember requesterMember = new ProjectMember();
+        Role requesterRole = new Role(); requesterRole.setName("Administrateur");
+        requesterMember.setRole(requesterRole);
+        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(requesterMember));
+        // assignee is member
+        Mockito.when(projectMemberRepository.findByProject_IdAndUser_Email(1, "bob@example.com")).thenReturn(Optional.of(new ProjectMember()));
+
+        // Task belongs to another project
+        Project other = new Project(); other.setId(2);
+        Task t = new Task(); t.setId(10); t.setProject(other);
+        Mockito.when(taskRepository.findById(10)).thenReturn(Optional.of(t));
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () -> service.assign(req));
+    }
 }

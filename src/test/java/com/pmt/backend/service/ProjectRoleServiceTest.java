@@ -73,4 +73,36 @@ class ProjectRoleServiceTest {
         assertThrows(RoleNotFoundException.class, () -> projectRoleService.assignRole(req));
         verify(projectMemberRepository, never()).save(any());
     }
+
+    @Test
+    void assignRole_shouldFail_whenRequesterNotMember() {
+        AssignRoleRequest req = new AssignRoleRequest();
+        req.setProjectId(1);
+        req.setRequesterEmail("alice@example.com");
+        req.setTargetEmail("bob@example.com");
+        req.setRoleName("Membre");
+
+        when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.empty());
+
+        assertThrows(com.pmt.backend.exception.NotProjectMemberException.class, () -> projectRoleService.assignRole(req));
+        verify(projectMemberRepository, never()).save(any());
+    }
+
+    @Test
+    void assignRole_shouldFail_whenRequesterNotAdmin() {
+        AssignRoleRequest req = new AssignRoleRequest();
+        req.setProjectId(1);
+        req.setRequesterEmail("alice@example.com");
+        req.setTargetEmail("bob@example.com");
+        req.setRoleName("Membre");
+
+        var pm = new ProjectMember();
+        var role = new Role();
+        role.setName("Membre"); // not admin
+        pm.setRole(role);
+        when(projectMemberRepository.findByProject_IdAndUser_Email(1, "alice@example.com")).thenReturn(Optional.of(pm));
+
+        assertThrows(com.pmt.backend.exception.InsufficientProjectPermissionException.class, () -> projectRoleService.assignRole(req));
+        verify(projectMemberRepository, never()).save(any());
+    }
 }
