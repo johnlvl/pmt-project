@@ -1,8 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, catchError, finalize, map, of, throwError } from 'rxjs';
+import { Observable, catchError, finalize, throwError } from 'rxjs';
 import { LoadingService } from './loading.service';
-import { ErrorService } from './error.service';
 
 function getApiBase(): string {
   const base = (typeof window !== 'undefined' ? (window as any).RUNTIME_CONFIG?.API_BASE_URL : undefined) || '/api';
@@ -27,14 +26,18 @@ export const loadingInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, nex
 
 // Error mapping to banner
 export const errorInterceptor: HttpInterceptorFn = (req: HttpRequest<any>, next: HttpHandlerFn): Observable<HttpEvent<any>> => {
-  const errors = inject(ErrorService);
   return next(req).pipe(
     catchError((err: unknown) => {
+      // Log errors to console only; no UI banner
       if (err instanceof HttpErrorResponse) {
-        const msg = err.error?.message || `${err.status} ${err.statusText || 'Erreur réseau'}`;
-        errors.set(msg);
+        console.error('HTTP error', {
+          url: req.url,
+          status: err.status,
+          statusText: err.statusText,
+          error: err.error
+        });
       } else {
-        errors.set('Erreur inconnue');
+        console.error('Unknown error', err);
       }
       return throwError(() => err);
     })
