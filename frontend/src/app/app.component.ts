@@ -2,7 +2,6 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SpinnerComponent } from './spinner.component';
-import { ErrorBannerComponent } from './error-banner.component';
 import { NotificationService } from './notification.service';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
@@ -10,9 +9,8 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, SpinnerComponent, ErrorBannerComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, SpinnerComponent],
   template: `
-    <app-error-banner></app-error-banner>
     <header style="padding:8px;background:#0d6efd;color:#fff;display:flex;gap:12px;align-items:center">
       <a routerLink="/" class="nav-link" style="font-weight:700;margin-right:8px">PMT</a>
       <nav style="display:flex;gap:12px;flex:1">
@@ -47,7 +45,9 @@ export class AppComponent {
 
   ngOnInit(){
     this.notifications.unreadCount$.subscribe(c => this.unreadCount = c);
-    this.notifications.refreshCount();
+    if (this.session.isLoggedIn) {
+      this.notifications.refreshCount();
+    }
   }
 
   logout(){
