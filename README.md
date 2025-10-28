@@ -14,6 +14,7 @@ Plateforme de gestion de projet collaborative (Angular 18 + Spring Boot 3.5 + My
 - Tests & couverture
 - CI/CD & Docker Hub
 - Dépannage
+- Version
 
 ---
 
@@ -236,6 +237,32 @@ docker build -t your-dh-namespace/pmt-frontend:local .
 - JaCoCo & JDK 25: quelques warnings d’instrumentation peuvent apparaître; privilégier JDK 21 en CI pour la couverture.
 - Erreur liée au nom de table réservé: la table utilisateurs s’appelle `users`.
 - Les rôles sont créés au démarrage si manquants; le script SQL fournit aussi des données de test.
+
+---
+
+## Versions
+
+Etat des versions et publication:
+- Backend (pom.xml): 1.0.1 (courant)
+- Frontend (package.json): 1.0.1 (courant)
+- Dernière release Git tag: v1.0.0 (images correspondantes disponibles sur Docker Hub si pipeline exécuté sur `main`)
+
+Images Docker (remplacez `<namespace>` par votre espace Docker Hub; par défaut `DOCKERHUB_LOGIN_USERNAME`):
+- Backend: `<namespace>/pmt-backend:1.0.1` et `<namespace>/pmt-backend:latest`
+- Frontend: `<namespace>/pmt-frontend:1.0.1` et `<namespace>/pmt-frontend:latest`
+
+Exemples (PowerShell):
+```powershell
+# Pull des images depuis Docker Hub
+$ns = "your-dh-namespace"
+
+docker pull "$ns/pmt-backend:1.0.1"; docker pull "$ns/pmt-backend:latest"
+docker pull "$ns/pmt-frontend:1.0.1"; docker pull "$ns/pmt-frontend:latest"
+```
+
+Notes:
+- Les numéros de version d'image correspondent aux fichiers de version applicative (pom/package.json) au moment du build CI.
+- Ouvrez l'onglet « Releases » du dépôt pour consulter les notes de version et les artefacts.
 
 ---
 
