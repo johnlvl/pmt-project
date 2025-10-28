@@ -245,7 +245,7 @@ docker build -t your-dh-namespace/pmt-frontend:local .
 Etat des versions et publication:
 - Backend (pom.xml): 1.0.1 (courant)
 - Frontend (package.json): 1.0.1 (courant)
-- Dernière release Git tag: v1.0.0 (images correspondantes disponibles sur Docker Hub si pipeline exécuté sur `main`)
+- Dernière release Git tag: v1.0.1 (images correspondantes disponibles sur Docker Hub si pipeline exécuté sur `main`)
 
 Images Docker (remplacez `<namespace>` par votre espace Docker Hub; par défaut `DOCKERHUB_LOGIN_USERNAME`):
 - Backend: `<namespace>/pmt-backend:1.0.1` et `<namespace>/pmt-backend:latest`
