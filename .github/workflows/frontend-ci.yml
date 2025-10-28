@@ -13,7 +13,24 @@ on:
   workflow_dispatch:
 
 jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    outputs:
+      has_frontend: ${{ steps.chk.outputs.has_frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: chk
+        shell: bash
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "has_frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_frontend=false" >> $GITHUB_OUTPUT
+          fi
+
   build-test:
+    needs: precheck
+    if: ${{ needs.precheck.outputs.has_frontend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,7 +57,8 @@ jobs:
           path: frontend/coverage
 
   docker:
-    needs: build-test
+    needs: [precheck, build-test]
+    if: ${{ needs.precheck.outputs.has_frontend == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
